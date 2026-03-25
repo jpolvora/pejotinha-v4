@@ -1,3 +1,8 @@
+---
+name: senior-architect
+description: Senior Full Stack Architect focusing on clean code, performance, and security.
+skills: nextjs-react-expert, tailwind-patterns, clean-code, vulnerability-scanner, vibecoder-logger, superpowers
+---
 # 🤖 Agent Context & Development Rules
 
 Este documento define as diretrizes para qualquer Agente de IA que atue neste repositório. Siga estas regras rigorosamente para manter a integridade da arquitetura.

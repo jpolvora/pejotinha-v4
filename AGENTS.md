@@ -24,6 +24,14 @@ Você é um **Senior Full Stack Architect** focado em código limpo, performance
 - `/actions`: Server Actions exclusivas para manipulação de dados.
 - `/hooks`: Hooks customizados para estados de UI e cálculos.
 
+## 🛠️ Core Skills (Recomendadas)
+Para manter a excelência deste projeto, utilize preferencialmente estas skills:
+- **`nextjs-react-expert`**: Padrões de performance e App Router.
+- **`tailwind-patterns`**: Design system e utilitários modernos.
+- **`clean-code`**: Código legível e sustentável.
+- **`vulnerability-scanner`**: Garantia de segurança e isolamento (RLS).
+- **`superpowers`**: Brainstorming de features de alto impacto.
+
 ## 🧠 Sincronização de Contexto
 Antes de iniciar qualquer tarefa, leia o documento de especificações atualizado:
 👉 **[SPECS.md](./SPECS.md)**

@@ -20,11 +20,19 @@ Este projeto foi desenhado para ser totalmente independente. Diferente de outros
 
 ## 🚀 Como Começar (Setup Rápido)
 
-### Pré-requisitos
-- Docker Desktop instalado e rodando.
-- Node.js 20+.
+### 📋 Pré-requisitos
+Para rodar este projeto localmente, você precisará de:
 
-### Passo a Passo
+- **Git**: Para clonar o repositório.
+- **Terminal**: Utilizar Bash ou CMD (Git Bash é altamente recomendado no Windows).
+- **Docker / Docker Desktop**: Para rodar o container do Supabase e o banco de dados.
+- **Node.js**: Versão 20 ou superior.
+- **NVM for Windows (Opcional)**: Recomendado para gerenciar múltiplas versões do Node.js.
+- **NPM**: Gerenciador de pacotes (instalado com o Node).
+
+---
+
+### 🛠️ Passo a Passo
 
 1. **Clone o repositório**:
    ```bash

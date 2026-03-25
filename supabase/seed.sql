@@ -1,0 +1,2 @@
+-- Seed users handled via Prisma or Admin API scripts.
+-- INSERT INTO auth.users (...)

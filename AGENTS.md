@@ -30,6 +30,7 @@ Para manter a excelência deste projeto, utilize preferencialmente estas skills:
 - **`tailwind-patterns`**: Design system e utilitários modernos.
 - **`clean-code`**: Código legível e sustentável.
 - **`vulnerability-scanner`**: Garantia de segurança e isolamento (RLS).
+- **`vibecoder-logger`**: Organização do histórico de desenvolvimento (Planos e Walkthroughs).
 - **`superpowers`**: Brainstorming de features de alto impacto.
 
 ## 🧠 Sincronização de Contexto

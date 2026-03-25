@@ -45,3 +45,10 @@ export async function loginWithGoogle() {
 
   return { success: false, message: 'Failed to get OAuth URL' }
 }
+
+export async function signOut() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  revalidatePath('/', 'layout')
+  redirect('/login')
+}

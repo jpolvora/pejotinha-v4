@@ -12,6 +12,7 @@ import {
 import { usePathname } from "next/navigation"
 import React from "react"
 import { Search } from "lucide-react"
+import { UserDropdown } from "./user-dropdown"
 
 export function Topbar() {
   const pathname = usePathname()
@@ -58,6 +59,7 @@ export function Topbar() {
           />
         </div>
         <ThemeSwitcher />
+        <UserDropdown />
       </div>
     </header>
   )

@@ -14,6 +14,13 @@ const FREELANCER_ID = process.env.SEED_USER_ID || '00000000-0000-0000-0000-00000
 const ADMIN_ID = '00000000-0000-0000-0000-00000000a000'
 
 async function main() {
+  // Check if database is already seeded (has profiles)
+  const profileCount = await prisma.profile.count()
+  if (profileCount > 0) {
+    console.log('✨ Base de dados já contém registros. Pulando seed para evitar duplicatas.')
+    return
+  }
+
   console.log('🌱 Seeding database...')
 
   // 1. Create Admin Profile

@@ -43,6 +43,30 @@ Este projeto foi desenhado para ser totalmente independente. Diferente de outros
    npm run dev
    ```
 
+---
+
+## 📸 Screenshots
+
+### Dashboard Desktop
+![Dashboard](public/screenshots/dashboard.png)
+
+### Access Control (Login)
+![Login](public/screenshots/login.png)
+
+### Project Management
+![Projects](public/screenshots/projects.png)
+
+### Project Details & Timeline
+![Project Details](public/screenshots/project_details.png)
+
+### Log New Activity (IA Assisted)
+![Log Activity](public/screenshots/log_activity.png)
+
+### Client Management
+![Clients](public/screenshots/clients.png)
+
+---
+
 4. **Pare o Ambiente Local**:
    ```bash
    npm run stop

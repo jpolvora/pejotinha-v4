@@ -9,6 +9,7 @@
     "lint": "next lint",
     "stop": "npx supabase stop",
     "setup": "npm install && node scripts/setup-env.mjs && npx prisma db push && node scripts/sync-auth.mjs && npx prisma db seed",
+    "reset:db": "npx prisma db push --force-reset && node scripts/sync-auth.mjs && npx prisma db seed",
     "deploy": "sh deploy.sh",
     "prepare": "husky"
   },

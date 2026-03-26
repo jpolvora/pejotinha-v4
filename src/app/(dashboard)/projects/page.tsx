@@ -41,6 +41,11 @@ export default async function ProjectsPage(props: { searchParams?: Promise<{ cus
                   <Input id="description" name="description" placeholder="Short description..." />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="slug">Project Slug (for integrations)</Label>
+                  <Input id="slug" name="slug" placeholder="e.g. acme-corp" required />
+                  <p className="text-[10px] text-muted-foreground italic">Used in branch names: client/acme-corp/feature</p>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="hourly_rate">Hourly Rate</Label>
                   <Input id="hourly_rate" name="hourly_rate" type="number" step="0.01" min="0" placeholder="e.g. 50" required />
                 </div>

@@ -12,6 +12,7 @@ export async function getCustomers() {
   const { data, error } = await supabase
     .from("customers")
     .select("*")
+    .eq("freelancer_id", user.id)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -30,6 +31,7 @@ export async function getCustomer(id: string) {
     .from("customers")
     .select("*")
     .eq("id", id)
+    .eq("freelancer_id", user.id)
     .single();
 
   if (error) {
@@ -82,6 +84,7 @@ export async function updateCustomer(id: string, formData: FormData) {
     .from("customers")
     .update({ name, email })
     .eq("id", id)
+    .eq("freelancer_id", user.id)
     .select()
     .single();
 
@@ -96,7 +99,15 @@ export async function updateCustomer(id: string, formData: FormData) {
 
 export async function deleteCustomer(id: string) {
   const supabase = await createClient();
-  const { error } = await supabase.from("customers").delete().eq("id", id);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { error } = await supabase
+    .from("customers")
+    .delete()
+    .eq("id", id)
+    .eq("freelancer_id", user.id);
+  
   if (error) throw new Error(error.message);
   revalidatePath("/clients");
 }

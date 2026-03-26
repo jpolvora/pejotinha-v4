@@ -22,7 +22,7 @@ export async function createExpense(formData: FormData) {
       amount,
       category,
       date: date ? new Date(date) : new Date(),
-      projectId: projectId // projectId is already string | null, no need for || null again
+      projectId: projectId || null
     }
   })
 
@@ -32,6 +32,16 @@ export async function createExpense(formData: FormData) {
 }
 
 export async function deleteExpense(expenseId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  // Security: Check ownership
+  const expenseCheck = await prisma.expense.findUnique({
+    where: { id: expenseId }
+  })
+  if (!expenseCheck || expenseCheck.freelancerId !== user.id) throw new Error('Unauthorized expense access')
+
   const expense = await prisma.expense.delete({
     where: { id: expenseId }
   })
@@ -39,9 +49,13 @@ export async function deleteExpense(expenseId: string) {
   return expense
 }
 
-export async function getFreelancerExpenses(freelancerId: string) {
+export async function getFreelancerExpenses() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
   return await prisma.expense.findMany({
-    where: { freelancerId },
+    where: { freelancerId: user.id },
     orderBy: { date: 'desc' },
     include: {
       project: {

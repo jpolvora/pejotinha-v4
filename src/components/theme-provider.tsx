@@ -45,9 +45,14 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     setThemeColor(color)
   }
 
+  // To avoid hydration mismatch and script tag warnings in some Next.js/React versions,
+  // we can ensure the inner content only renders when mounted, 
+  // but NextThemesProvider itself should render for the script to work.
   return (
     <ThemeColorContext.Provider value={{ themeColor, setThemeColor: handleSetThemeColor }}>
-      <NextThemesProvider {...props}>{children}</NextThemesProvider>
+      <NextThemesProvider {...props}>
+        {children}
+      </NextThemesProvider>
     </ThemeColorContext.Provider>
   )
 }

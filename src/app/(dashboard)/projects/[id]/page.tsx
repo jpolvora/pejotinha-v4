@@ -12,6 +12,7 @@ import Link from "next/link";
 import { EvidenceUpload } from "@/components/evidence-upload";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDateTime, formatDuration } from "@/lib/locale";
+import { MagicNarrator } from "@/components/magic-narrator";
 
 export default async function ProjectDetailsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -55,6 +56,12 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                     <Plus className="mr-2 h-4 w-4" /> Create New Task
                   </Button>
                 </Link>
+
+                <MagicNarrator activities={activities.map(a => ({
+                  source: a.source,
+                  description: a.description,
+                  startTime: a.startTime
+                }))} />
               </CardContent>
             </Card>
 

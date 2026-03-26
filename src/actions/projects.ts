@@ -67,6 +67,7 @@ export async function createProject(formData: FormData) {
   const customerId = formData.get("customer_id") as string;
   const description = formData.get("description") as string | null;
   const hourly_rate = parseFloat(formData.get("hourly_rate") as string) || 0;
+  const slug = formData.get("slug") as string | null;
   const tech_stacks_str = formData.get("tech_stacks") as string | null;
   const tech_stacks = tech_stacks_str ? tech_stacks_str.split(",").map(s => s.trim()).filter(Boolean) : [];
 
@@ -80,6 +81,7 @@ export async function createProject(formData: FormData) {
       freelancerId: user.id,
       customerId,
       name,
+      slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
       description,
       hourly_rate,
       tech_stacks
@@ -97,6 +99,7 @@ export async function updateProject(id: string, formData: FormData) {
   const name = formData.get("name") as string;
   const description = formData.get("description") as string | null;
   const hourly_rate = parseFloat(formData.get("hourly_rate") as string) || 0;
+  const slug = formData.get("slug") as string | null;
   const tech_stacks_str = formData.get("tech_stacks") as string | null;
   const tech_stacks = tech_stacks_str ? tech_stacks_str.split(",").map(s => s.trim()).filter(Boolean) : [];
 
@@ -107,7 +110,13 @@ export async function updateProject(id: string, formData: FormData) {
 
   const updated = await prisma.project.update({
     where: { id },
-    data: { name, description, hourly_rate, tech_stacks }
+    data: { 
+      name, 
+      slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
+      description, 
+      hourly_rate, 
+      tech_stacks 
+    }
   });
 
   revalidatePath("/projects");

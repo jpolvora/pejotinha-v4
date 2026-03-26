@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { encrypt, decrypt } from '@/lib/encryption'
+import crypto from 'crypto'
 
 export interface SaveSettingsInput {
   aiConfig: {
@@ -16,6 +17,7 @@ export interface SaveSettingsInput {
     botToken: string
     chatId: string
   }
+  webhookSecret?: string
 }
 
 /**
@@ -32,7 +34,7 @@ export async function getSettings() {
 
   const profile = await prisma.profile.findUnique({
     where: { id: user.id },
-    select: { settings: true }
+    select: { settings: true, webhookSecret: true }
   })
 
   const settings = profile?.settings as unknown as SaveSettingsInput | null
@@ -46,7 +48,10 @@ export async function getSettings() {
     }
   }
 
-  return settings
+  return {
+    ...settings,
+    webhookSecret: profile?.webhookSecret || undefined
+  } as SaveSettingsInput
 }
 
 /**
@@ -72,7 +77,8 @@ export async function getSanitizedSettings() {
     telegramConfig: settings.telegramConfig ? {
       ...settings.telegramConfig,
       botToken: settings.telegramConfig.botToken ? mask(settings.telegramConfig.botToken) : ''
-    } : { botToken: '', chatId: '' }
+    } : { botToken: '', chatId: '' },
+    webhookSecret: settings.webhookSecret ? mask(settings.webhookSecret) : ''
   }
 }
 
@@ -122,4 +128,25 @@ export async function saveSettings(data: SaveSettingsInput) {
 
   revalidatePath('/settings')
   return { success: true }
+}
+
+export async function rotateWebhookSecret() {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    throw new Error('Unauthorized')
+  }
+
+  const newSecret = crypto.randomUUID()
+
+  await prisma.profile.update({
+    where: { id: user.id },
+    data: {
+      webhookSecret: newSecret
+    }
+  })
+
+  revalidatePath('/settings')
+  return { success: true, secret: newSecret }
 }

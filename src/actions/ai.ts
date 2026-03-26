@@ -7,7 +7,7 @@ import { getSettings } from './settings'
 
 export type AIIntent = 'LOG_ACTIVITY' | 'CREATE_TASK' | 'UNKNOWN';
 
-export async function extractTaskOrActivityPayload(text: string, currentTimeIso: string) {
+async function getAIModel() {
   const settings = await getSettings()
   
   if (!settings?.aiConfig?.apiKey) {
@@ -18,20 +18,14 @@ export async function extractTaskOrActivityPayload(text: string, currentTimeIso:
 
   let aiModel;
   
-  // Choose the right provider based on config
-  // Check if it's a Google host but NOT explicitly forced to OpenAI shim by user configuration (unless provider is gemini)
   const isGoogleHost = baseUrl && baseUrl.includes('generativelanguage.googleapis.com');
   const isNativeGoogle = provider === 'gemini' || (isGoogleHost && !baseUrl.includes('/openai'));
 
   if (isNativeGoogle || isGoogleHost) {
-    // Determine the best version: models like 1.5 often require v1beta, 
-    // while Gemini 2.5/3.1 are stable in v1.
     const isLegacyModel = model && (model.includes('1.5') || model.includes('1.0'));
     
     const google = createGoogleGenerativeAI({
       apiKey,
-      // If user provided a custom google URL, use it. 
-      // Otherwise, let the SDK use its default stable/beta logic.
       baseURL: isGoogleHost && baseUrl.includes('/openai') 
         ? baseUrl.split('/openai')[0] 
         : (isGoogleHost && isLegacyModel && baseUrl.includes('/v1') ? baseUrl.replace('/v1', '/v1beta') : baseUrl),
@@ -42,9 +36,14 @@ export async function extractTaskOrActivityPayload(text: string, currentTimeIso:
       apiKey,
       baseURL: baseUrl,
     })
-    // For standard OpenAI-compatible providers, use the chat completions endpoint
     aiModel = aiProvider.chat(model || 'gpt-5.4-mini')
   }
+
+  return aiModel
+}
+
+export async function extractTaskOrActivityPayload(text: string, currentTimeIso: string) {
+  const aiModel = await getAIModel()
 
   try {
     const { text: resultText } = await generateText({
@@ -94,4 +93,37 @@ export async function extractActivityPayload(text: string, currentTimeIso: strin
   const result = await extractTaskOrActivityPayload(text, currentTimeIso);
   if (!result.success) return result;
   return { success: true, data: result.data };
+}
+
+export async function generateNarrativeSummary(activities: { source: string, description: string, startTime?: Date | null }[]) {
+  if (activities.length === 0) return { success: true, summary: '' }
+
+  try {
+    const aiModel = await getAIModel()
+
+    const activityList = activities.map(a => {
+      const time = a.startTime ? new Date(a.startTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''
+      return `- ${time ? `[${time}] ` : ''}${a.source === 'git' ? 'commit: ' : ''}${a.description}`
+    }).join('\n')
+
+    const { text: summary } = await generateText({
+      model: aiModel,
+      prompt: `Baseado na lista de atividades abaixo, gere um resumo narrativo profissional em português para um relatório de cliente. 
+O resumo deve ser conciso (um parágrafo ou poucos marcadores), focado em resultados e conquistas, e omitir detalhes técnicos irrelevantes (como hashes de commit ou nomes de arquivos específicos se não agregarem valor).
+
+Atividades:
+${activityList}
+
+Instruções:
+- Retorne apenas o texto do resumo, sem introduções, conclusões ou formatação markdown excessiva.
+- Se houver horários, tente agrupar atividades relacionadas cronologicamente.
+- O tom deve ser profissional, direto e proativo.
+`
+    })
+
+    return { success: true, summary }
+  } catch (error: any) {
+    console.error('Erro ao gerar narrativa:', error)
+    return { success: false, error: error.message || 'Falha ao comunicar com a IA.' }
+  }
 }

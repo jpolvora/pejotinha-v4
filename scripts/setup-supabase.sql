@@ -96,6 +96,10 @@ DROP POLICY IF EXISTS "Freelancers can view evidences of their projects" ON publ
 CREATE POLICY "Freelancers can view evidences of their projects" ON public.evidences FOR SELECT USING (EXISTS (SELECT 1 FROM public.activities a JOIN public.projects p ON a.project_id = p.id WHERE a.id = activity_id AND p.freelancer_id = auth.uid()));
 DROP POLICY IF EXISTS "Freelancers can insert evidences to their activities" ON public.evidences;
 CREATE POLICY "Freelancers can insert evidences to their activities" ON public.evidences FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM public.activities a JOIN public.projects p ON a.project_id = p.id WHERE a.id = activity_id AND p.freelancer_id = auth.uid()));
+DROP POLICY IF EXISTS "Freelancers can update evidences of their projects" ON public.evidences;
+CREATE POLICY "Freelancers can update evidences of their projects" ON public.evidences FOR UPDATE USING (EXISTS (SELECT 1 FROM public.activities a JOIN public.projects p ON a.project_id = p.id WHERE a.id = activity_id AND p.freelancer_id = auth.uid()));
+DROP POLICY IF EXISTS "Freelancers can delete evidences of their projects" ON public.evidences;
+CREATE POLICY "Freelancers can delete evidences of their projects" ON public.evidences FOR DELETE USING (EXISTS (SELECT 1 FROM public.activities a JOIN public.projects p ON a.project_id = p.id WHERE a.id = activity_id AND p.freelancer_id = auth.uid()));
 DROP POLICY IF EXISTS "Clients can view evidences of assigned projects" ON public.evidences;
 CREATE POLICY "Clients can view evidences of assigned projects" ON public.evidences FOR SELECT USING (EXISTS (SELECT 1 FROM public.activities a JOIN public.projects p ON a.project_id = p.id WHERE a.id = activity_id AND p.client_profile_id = auth.uid()));
 
@@ -106,6 +110,8 @@ DROP POLICY IF EXISTS "Clients can insert approvals for assigned activities" ON 
 CREATE POLICY "Clients can insert approvals for assigned activities" ON public.approvals FOR INSERT WITH CHECK (auth.uid() = client_id AND EXISTS (SELECT 1 FROM public.activities a JOIN public.projects p ON a.project_id = p.id WHERE a.id = activity_id AND p.client_profile_id = auth.uid()));
 DROP POLICY IF EXISTS "Clients can view own approvals" ON public.approvals;
 CREATE POLICY "Clients can view own approvals" ON public.approvals FOR SELECT USING (auth.uid() = client_id);
+DROP POLICY IF EXISTS "Clients can update own approvals" ON public.approvals;
+CREATE POLICY "Clients can update own approvals" ON public.approvals FOR UPDATE USING (auth.uid() = client_id);
 
 -- Tasks
 DROP POLICY IF EXISTS "Freelancers can access their own tasks" ON public.tasks;
@@ -119,5 +125,9 @@ CREATE POLICY "Freelancers can access their own expenses" ON public.expenses FOR
 DROP POLICY IF EXISTS "Freelancers can access their own invoices" ON public.invoices;
 CREATE POLICY "Freelancers can access their own invoices" ON public.invoices FOR ALL USING (auth.uid() = freelancer_id);
 
--- Reload Postgrest schema cache
+-- Personal Events
+DROP POLICY IF EXISTS "Freelancers can access their own personal events" ON public.personal_events;
+CREATE POLICY "Freelancers can access their own personal events" ON public.personal_events FOR ALL USING (auth.uid() = freelancer_id);
+
+-- 6. Reload Postgrest schema cache
 NOTIFY pgrst, 'reload schema';

@@ -8,10 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "stop": "npx supabase stop",
-    "setup": "npm install && node scripts/setup-env.mjs && npx prisma db push && node scripts/sync-auth.mjs && npx prisma db seed && npx prisma db execute --file scripts/fix-permissions.sql --schema prisma/schema.prisma",
-    "reset:db": "npx prisma db push --force-reset && node scripts/sync-auth.mjs && npx prisma db seed && npx prisma db execute --file scripts/fix-permissions.sql --schema prisma/schema.prisma",
+    "setup": "npm install && node scripts/setup-env.mjs && npx prisma db push && node scripts/sync-auth.mjs && npx prisma db seed && npm run db:setup-supabase",
+    "reset:db": "npx prisma db push --force-reset && node scripts/sync-auth.mjs && npx prisma db seed && npm run db:setup-supabase",
     "deploy": "sh deploy.sh",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:setup-supabase": "npx prisma db execute --file scripts/setup-supabase.sql --schema prisma/schema.prisma"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

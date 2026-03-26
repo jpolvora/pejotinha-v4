@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { SaveSettingsInput, saveSettings } from '@/actions/settings'
+import { SaveSettingsInput, saveSettings, rotateWebhookSecret } from '@/actions/settings'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useToast } from '@/hooks/use-toast'
-import { Bot, Save, Loader2, Cpu, Receipt } from 'lucide-react'
+import { Bot, Save, Loader2, Cpu, Receipt, Share2, RefreshCw, Copy, Check } from 'lucide-react'
 
 interface SettingsFormProps {
   initialData: SaveSettingsInput | null
@@ -36,8 +36,20 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     telegramConfig: {
       botToken: String(initialData?.telegramConfig?.botToken || ''),
       chatId: String(initialData?.telegramConfig?.chatId || ''),
-    }
+    },
+    webhookSecret: initialData?.webhookSecret || ''
   })
+
+  const [isRotating, setIsRotating] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [originUrl, setOriginUrl] = useState('https://pejotinha-v4.vercel.app')
+
+  // Hook to detect hydration completion and update client-side values
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOriginUrl(window.location.origin)
+    }
+  }, [])
 
   const [modelType, setModelType] = useState<string>(
     [
@@ -60,7 +72,6 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     { label: 'Local (Ollama)', value: 'http://localhost:11434/v1' },
     { label: 'Local (LM Studio)', value: 'http://localhost:1234/v1' },
   ]
-
   const [urlType, setUrlType] = useState<string>(
     commonBaseUrls.some(u => u.value === formData.aiConfig.baseUrl) ? formData.aiConfig.baseUrl : 'custom'
   )
@@ -105,6 +116,40 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     } finally {
       setIsPending(false)
     }
+  }
+
+  const handleRotateSecret = async () => {
+    if (!confirm('Tem certeza que deseja rotacionar sua chave de webhook? As integrações existentes pararão de funcionar até serem atualizadas.')) return
+    
+    setIsRotating(true)
+    try {
+      const result = await rotateWebhookSecret()
+      if (result.success) {
+        setFormData(prev => ({ ...prev, webhookSecret: result.secret! }))
+        toast({
+          title: 'Sucesso',
+          description: 'Nova chave de integração gerada.',
+        })
+      }
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Falha ao rotacionar a chave.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsRotating(false)
+    }
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+    toast({
+      title: 'Copiado',
+      description: 'Chave copiada para a área de transferência.',
+    })
   }
 
   return (
@@ -267,6 +312,82 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
           <p className="text-xs text-muted-foreground">
             Para descobrir seu Chat ID, envie uma mensagem para o bot @userinfobot ou similar no Telegram.
           </p>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border shadow-sm">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Share2 className="h-5 w-5 text-primary" />
+            <CardTitle>Integrações Externas (Webhooks)</CardTitle>
+          </div>
+          <CardDescription>
+            Use esta chave para integrar o Pejotinha com Git, Azure DevOps e outras ferramentas.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label>Sua Chave de Webhook (PEJOTINHA_WEBHOOK_SECRET)</Label>
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  type="password"
+                  value={formData.webhookSecret || 'Nenhuma chave gerada'}
+                  className="font-mono text-xs bg-muted/50"
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => formData.webhookSecret && copyToClipboard(formData.webhookSecret)}
+                  disabled={!formData.webhookSecret}
+                >
+                  {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="icon"
+                  onClick={handleRotateSecret}
+                  disabled={isRotating}
+                  title="Gerar nova chave"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRotating ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">
+                Esta chave é usada no header <code>Authorization: Bearer {'<chave>'}</code> para autenticar chamadas de API.
+              </p>
+            </div>
+            
+            <div className="rounded-lg bg-muted/30 p-4 border text-xs">
+              <p className="font-semibold mb-2">Como usar Git + Husky:</p>
+              <div className="relative">
+                <pre className="overflow-x-auto p-3 bg-black/80 text-green-400 rounded-md font-mono text-[10px] leading-relaxed">
+{`# .husky/post-commit
+#!/bin/sh
+COMMIT_HASH=$(git rev-parse HEAD)
+COMMIT_MSG=$(git log -1 --pretty=%B)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+FILES=$(git diff-tree --no-commit-id -r --name-only HEAD | tr '\\n' ',')
+CLIENT_SLUG=$(echo "$BRANCH" | sed -n 's|client/\\([^/]*\\)/.*|\\1|p')
+
+curl -s -X POST "${originUrl}/api/integrations/git/commit" \\
+  -H "Authorization: Bearer ${formData.webhookSecret || 'SUA_CHAVE'}" \\
+  -H "Content-Type: application/json" \\
+  -d "{
+    \\"hash\\": \\"$COMMIT_HASH\\",
+    \\"message\\": \\"$COMMIT_MSG\\",
+    \\"branch\\": \\"$BRANCH\\",
+    \\"client_slug\\": \\"$CLIENT_SLUG\\",
+    \\"files_changed\\": \\"$FILES\\",
+    \\"timestamp\\": \\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\\"
+  }" &`}
+                </pre>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

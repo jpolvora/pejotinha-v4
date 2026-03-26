@@ -16,7 +16,7 @@ export default async function ExpensesPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const expenses = await getFreelancerExpenses(user.id);
+  const expenses = await getFreelancerExpenses();
   const projects = await getProjects();
   
   const totalExpenses = expenses.reduce((acc: number, exp: any) => acc + Number(exp.amount), 0);

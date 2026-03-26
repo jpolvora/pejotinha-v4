@@ -62,6 +62,21 @@ export default async function EditClientPage(props: { params: Promise<{ id: stri
                 className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="hourly_rate" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Default Hourly Rate (Optional)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">R$</span>
+                <Input 
+                  id="hourly_rate" 
+                  name="hourly_rate" 
+                  type="number" 
+                  step="0.01" 
+                  defaultValue={customer.hourly_rate ? Number(customer.hourly_rate) : ''}
+                  className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md pl-10 font-bold"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">If empty, uses Global Freelancer Rate.</p>
+            </div>
             <div className="pt-4 flex justify-end border-t border-border/50 mt-8 pt-6">
               <SubmitButton label="Save Changes" />
             </div>

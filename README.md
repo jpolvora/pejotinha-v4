@@ -4,6 +4,18 @@ Pejotinha é uma plataforma SaaS multiusuário voltada para freelancers que dese
 
 ---
 
+## ✨ Funcionalidades em Destaque
+
+- **Signup & Auth**: Fluxo de cadastro integrado com Supabase Auth e sincronização automática de perfis.
+- **Hierarchical Access**: Gestão de acessos granular para projetos (Owner vs Supervisor).
+- **Proof of Work (PoW)**: Registro de atividades com evidências, prints e logs integrados.
+- **IA Assisted Logging**: Use linguagem natural para registrar suas horas.
+- **Timeline Integrada**: Visualize eventos pessoais e profissionais em uma linha do tempo unificada.
+- **Slug System**: Geração automática de URLs amigáveis para projetos.
+- **Vibe Coding History**: Histórico detalhado de todo o desenvolvimento em `/plans`.
+
+---
+
 ## 🛠️ Tecnologias
 - **Frontend**: Next.js 15 (App Router), Tailwind CSS v4, Lucide React, Shadcn/UI.
 - **Backend / BaaS**: Supabase (Self-hosted ou Cloud) - Auth, Storage, Edge Functions.
@@ -27,7 +39,6 @@ Para rodar este projeto localmente, você precisará de:
 - **Terminal**: Utilizar Bash ou CMD (Git Bash é altamente recomendado no Windows).
 - **Docker / Docker Desktop**: Para rodar o container do Supabase e o banco de dados.
 - **Node.js**: Versão 20 ou superior.
-- **NVM for Windows (Opcional)**: Recomendado para gerenciar múltiplas versões do Node.js.
 - **NPM**: Gerenciador de pacotes (instalado com o Node).
 
 ---
@@ -53,25 +64,43 @@ Para rodar este projeto localmente, você precisará de:
 
 ---
 
+## 🔄 Workflow de Migrações (Hybrid Approach)
+
+O Pejotinha utiliza um workflow híbrido entre **Prisma** e **Supabase SQL** para garantir que recursos nativos (RLS, Triggers) sejam mantidos.
+
+1. **Alterar Schema**: Modifique `prisma/schema.prisma`.
+2. **Sincronizar**: 
+   - Desenvolvimento: `npx prisma db push`
+   - Produção: `npx prisma migrate dev`
+3. **Aplicar Supabase Rules**: Sempre após uma sincronização que altere tabelas, execute:
+   ```bash
+   npm run db:setup-supabase
+   ```
+   *Isso re-aplica as políticas de RLS e Triggers definidos em `scripts/setup-supabase.sql`.*
+
+---
+
+## 🔌 Integrações e Automação (Webhooks)
+
+O Pejotinha permite automatizar o registro de atividades através de Webhooks.
+
+- **Git Commit Workflow**: Registre automaticamente seus commits como atividades vinculadas a projetos.
+- **Husky Integration**: Automatize o envio de commits usando hooks de git locais.
+
+Confira a [documentação de integrações](./docs/INTEGRATIONS.md) para saber como configurar.
+
+---
+
 ## 📸 Screenshots
 
 ### Dashboard Desktop
 ![Dashboard](public/screenshots/dashboard.png)
 
-### Access Control (Login)
+### Access Control (SignUp/Login)
 ![Login](public/screenshots/login.png)
 
 ### Project Management
 ![Projects](public/screenshots/projects.png)
-
-### Project Details & Timeline
-![Project Details](public/screenshots/project_details.png)
-
-### Log New Activity (IA Assisted)
-![Log Activity](public/screenshots/log_activity.png)
-
-### Client Management
-![Clients](public/screenshots/clients.png)
 
 ---
 
@@ -95,14 +124,10 @@ Após o setup, o banco de dados virá populado com os seguintes dados de teste:
 
 ---
 
-## 📦 Deploy em Produção (Coolify / Umbrel / Portainer)
-
+## 📦 Deploy em Produção
 Para faturar a imagem otimizada para o seu servidor:
 
-1. **Configure o seu Registro**:
-   Edite o `deploy.sh` e coloque o seu `USERNAME` do GitHub (ou outro registro).
-
-2. **Execute o Deploy**:
+1. **Execute o Deploy**:
    ```bash
    npm run deploy
    ```
@@ -113,10 +138,6 @@ Para faturar a imagem otimizada para o seu servidor:
 ## 🛡️ Segurança e Desenvolvimento (CI/CD Local)
 Este projeto utiliza **Husky**, **Lint-Staged** e **Secretlint** para garantir a qualidade e segurança do código.
 - **Pré-commit**: Toda tentativa de commit irá rodar uma verificação de segurança automática para impedir que credenciais (API Keys, Secrets) sejam vazadas no repositório.
-
-3. **No seu Servidor**:
-   - Utilize a imagem gerada (ex: `ghcr.io/seu-usuario/pejotinha-v4:latest`).
-   - Certifique-se de configurar as variáveis de ambiente (`.env`) no seu orquestrador (Coolify/Umbrel) apontando para sua instância do Supabase.
 
 ---
 

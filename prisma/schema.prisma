@@ -19,14 +19,17 @@ model Profile {
   createdAt      DateTime        @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime        @default(dbgenerated("timezone('utc'::text, now())")) @map("updated_at") @db.Timestamptz(6)
   settings       Json?           @default("{}")
-  webhookSecret  String?         @unique @map("webhook_secret")
+  webhookSecret      String?         @unique @map("webhook_secret")
+  defaultHourlyRate  Decimal?        @default(0.00) @map("default_hourly_rate") @db.Decimal
   approvals      Approval[]
   customers      Customer[]      @relation("FreelancerCustomers")
   invoices       Invoice[]
   personalEvents PersonalEvent[]
   clientProjects Project[]       @relation("ClientProjects")
   projects       Project[]       @relation("FreelancerProjects")
-  expenses      Expense[]
+  expenses       Expense[]
+  invitations    Invitation[]
+  projectAccess  ProjectAccess[]
 
   @@map("profiles")
   @@schema("public")
@@ -66,6 +69,8 @@ model Project {
   freelancer      Profile        @relation("FreelancerProjects", fields: [freelancerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   tasks           Task[]
   expenses        Expense[]
+  invitations     Invitation[]
+  projectAccess   ProjectAccess[]
 
   @@map("projects")
   @@schema("public")
@@ -84,8 +89,11 @@ model Activity {
   ticket          String?
   value           Decimal?   @default(0.00) @db.Decimal
   taskId          String?    @map("task_id") @db.Uuid
-  source          String     @default("manual")
-  externalId      String?    @map("external_id")
+  source          String          @default("manual")
+  externalId      String?         @map("external_id")
+  status          activity_status @default(pending)
+  isPaid          Boolean         @default(false) @map("is_paid")
+  paidAt          DateTime?       @map("paid_at") @db.Timestamptz(6)
   project         Project    @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   task            Task?      @relation(fields: [taskId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   approvals       Approval[]
@@ -192,6 +200,30 @@ model Expense {
   @@schema("public")
 }
 
+enum activity_status {
+  pending
+  approved
+  rejected
+  pending_evidence
+
+  @@schema("public")
+}
+
+enum client_access_role {
+  owner
+  supervisor
+
+  @@schema("public")
+}
+
+enum invitation_status {
+  pending
+  accepted
+  expired
+
+  @@schema("public")
+}
+
 enum approval_status {
   approved
   rejected
@@ -228,5 +260,39 @@ enum task_status {
   doing
   done
 
+  @@schema("public")
+}
+
+model Invitation {
+  id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String
+  projectId    String            @map("project_id") @db.Uuid
+  freelancerId String            @map("freelancer_id") @db.Uuid
+  status       invitation_status @default(pending)
+  role         client_access_role @default(owner)
+  token        String            @unique
+  expiresAt    DateTime          @map("expires_at") @db.Timestamptz(6)
+  createdAt    DateTime          @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime          @default(dbgenerated("timezone('utc'::text, now())")) @map("updated_at") @db.Timestamptz(6)
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  freelancer Profile @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+
+  @@map("invitations")
+  @@schema("public")
+}
+
+model ProjectAccess {
+  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId String             @map("project_id") @db.Uuid
+  profileId String             @map("profile_id") @db.Uuid
+  role      client_access_role @default(owner)
+  createdAt DateTime           @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, profileId])
+  @@map("project_access")
   @@schema("public")
 }

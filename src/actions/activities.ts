@@ -17,7 +17,8 @@ export async function getActivities(projectId: string) {
       project: {
         OR: [
           { freelancerId: user.id },
-          { clientProfileId: user.id }
+          { clientProfileId: user.id },
+          { projectAccess: { some: { profileId: user.id } } }
         ]
       }
     },
@@ -72,6 +73,9 @@ export async function createActivity(formData: FormData) {
   const hourlyRate = Number(project.hourly_rate) || 0;
   const value = (durationMinutes / 60) * hourlyRate;
 
+  const isPaid = formData.get("is_paid") === "true";
+  const paidAt = isPaid ? new Date() : null;
+
   const activity = await prisma.activity.create({
     data: {
       projectId,
@@ -82,7 +86,9 @@ export async function createActivity(formData: FormData) {
       sprint,
       ticket,
       startTime,
-      endTime
+      endTime,
+      isPaid,
+      paidAt
     }
   });
 
@@ -209,27 +215,176 @@ export async function approveActivity(formData: FormData) {
 
   const activityId = formData.get("activity_id") as string;
   const projectId = formData.get("project_id") as string;
-  const status = formData.get("status") as any; // 'approved' | 'rejected' | 'revision'
+  const status = formData.get("status") as string; // 'approved' | 'rejected' | 'revision'
   const feedback = formData.get("feedback") as string | null;
 
-  // Validate the client profile matching
+  // Validate permission via ProjectAccess or clientProfileId
   const activity = await prisma.activity.findUnique({
     where: { id: activityId },
-    include: { project: true }
+    include: { 
+      project: {
+        include: {
+          projectAccess: {
+            where: { profileId: user.id }
+          }
+        }
+      } 
+    }
   });
   
-  if (!activity || activity.project.clientProfileId !== user.id) {
-    throw new Error("Unauthorized to approve this project activities");
+  const hasAccess = activity?.project.clientProfileId === user.id || 
+                  (activity?.project.projectAccess[0]?.role === 'owner');
+
+  if (!activity || !hasAccess) {
+    throw new Error("You do not have permission to approve/reject activities for this project (Owner level required)");
   }
 
-  await prisma.approval.create({
-    data: {
-      activityId,
-      clientId: user.id,
-      status,
-      feedback
+  const finalActivityStatus = 
+    status === 'approved' ? 'approved' : 
+    status === 'rejected' ? 'rejected' : 
+    status === 'revision' ? 'pending_evidence' : 
+    'pending';
+
+  await prisma.$transaction([
+    prisma.approval.create({
+      data: {
+        activityId,
+        clientId: user.id,
+        status: status === 'revision' ? 'revision' : (status as any),
+        feedback
+      }
+    }),
+    prisma.activity.update({
+      where: { id: activityId },
+      data: { 
+        status: finalActivityStatus as any
+      }
+    })
+  ]);
+
+  revalidatePath(`/projects/${projectId}`);
+}
+
+export async function updateActivity(id: string, formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const description = formData.get("description") as string;
+  const status = formData.get("status") as any;
+  const isPaid = formData.get("is_paid") === "true";
+  const projectId = formData.get("project_id") as string;
+
+  // Validate ownership
+  const activity = await prisma.activity.findUnique({
+    where: { id },
+    include: { project: true }
+  });
+
+  if (!activity || activity.project.freelancerId !== user.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const paidAt = isPaid && !activity.isPaid ? new Date() : (isPaid ? activity.paidAt : null);
+
+  await prisma.activity.update({
+    where: { id },
+    data: { 
+      description, 
+      status, 
+      isPaid, 
+      paidAt 
     }
   });
 
   revalidatePath(`/projects/${projectId}`);
+}
+
+export async function addEvidence(activityId: string, projectId: string, formData: FormData) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    // Validate ownership
+    const activity = await prisma.activity.findUnique({
+        where: { id: activityId },
+        include: { project: true }
+    });
+
+    if (!activity || activity.project.freelancerId !== user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    const type = formData.get("type") as string; // 'file' | 'link' | 'text' | 'observation' | 'commit'
+    
+    if (type === 'file') {
+        const file = formData.get("file") as File;
+        if (!file || file.size === 0) throw new Error("File required");
+        
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${activityId}/evidence_${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+            .from("evidence-storage")
+            .upload(filePath, file);
+
+        if (uploadError) throw new Error(`Upload error: ${uploadError.message}`);
+
+        const { data: { publicUrl } } = supabase.storage
+            .from("evidence-storage")
+            .getPublicUrl(filePath);
+        
+        await prisma.evidence.create({
+            data: {
+                activityId,
+                evidenceType: 'file',
+                fileUrl: publicUrl
+            }
+        });
+    } else {
+        const content = formData.get("content") as string;
+        if (!content) throw new Error("Content required");
+        
+        await prisma.evidence.create({
+            data: {
+                activityId,
+                evidenceType: type,
+                content
+            }
+        });
+    }
+
+    revalidatePath(`/projects/${projectId}`);
+}
+
+export async function deleteEvidence(id: string, activityId: string, projectId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    // Check ownership
+    const evidence = await prisma.evidence.findUnique({
+        where: { id },
+        include: { activity: { include: { project: true } } }
+    });
+
+    if (!evidence || evidence.activity.project.freelancerId !== user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    // If it's a file, try to delete from storage (optional, but good practice)
+    if (evidence.evidenceType === 'file' && evidence.fileUrl) {
+       try {
+           const url = new URL(evidence.fileUrl);
+           const path = url.pathname.split('/evidence-storage/')[1];
+           if (path) {
+               await supabase.storage.from("evidence-storage").remove([path]);
+           }
+       } catch (e) {
+           console.error("Failed to delete from storage:", e);
+       }
+    }
+
+    await prisma.evidence.delete({ where: { id } });
+    revalidatePath(`/projects/${projectId}`);
 }

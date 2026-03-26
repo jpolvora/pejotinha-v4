@@ -8,6 +8,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ProjectFormFields } from "@/components/projects/project-form-fields";
+
 export default async function EditProjectPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const project = await getProjectById(params.id);
@@ -42,16 +44,10 @@ export default async function EditProjectPage(props: { params: Promise<{ id: str
         </CardHeader>
         <CardContent className="pt-6">
           <form action={actionWithId} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Project Name</Label>
-              <Input 
-                id="name" 
-                name="name" 
-                defaultValue={project.name} 
-                required 
-                className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md"
-              />
-            </div>
+            <ProjectFormFields 
+              initialName={project.name} 
+              initialSlug={project.slug || ''}
+            />
             <div className="space-y-2">
               <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</Label>
               <Input 
@@ -62,17 +58,21 @@ export default async function EditProjectPage(props: { params: Promise<{ id: str
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="hourly_rate" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Hourly Rate</Label>
-              <Input 
-                id="hourly_rate" 
-                name="hourly_rate" 
-                type="number" 
-                step="0.01" 
-                min="0" 
-                defaultValue={project.hourly_rate?.toString() || '0'} 
-                required 
-                className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md"
-              />
+              <Label htmlFor="hourly_rate" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Hourly Rate (Optional)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">R$</span>
+                <Input 
+                  id="hourly_rate" 
+                  name="hourly_rate" 
+                  type="number" 
+                  step="0.01" 
+                  min="0" 
+                  defaultValue={project.hourly_rate?.toString() || ''} 
+                  placeholder="0.00"
+                  className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md pl-10 font-bold"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">If empty, uses Client Rate or Global Freelancer Rate.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="tech_stacks" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tech Stacks (comma separated)</Label>

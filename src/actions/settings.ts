@@ -18,6 +18,7 @@ export interface SaveSettingsInput {
     chatId: string
   }
   webhookSecret?: string
+  defaultHourlyRate?: number
 }
 
 /**
@@ -34,7 +35,7 @@ export async function getSettings() {
 
   const profile = await prisma.profile.findUnique({
     where: { id: user.id },
-    select: { settings: true, webhookSecret: true }
+    select: { settings: true, webhookSecret: true, defaultHourlyRate: true }
   })
 
   const settings = profile?.settings as unknown as SaveSettingsInput | null
@@ -50,7 +51,8 @@ export async function getSettings() {
 
   return {
     ...settings,
-    webhookSecret: profile?.webhookSecret || undefined
+    webhookSecret: profile?.webhookSecret || undefined,
+    defaultHourlyRate: profile?.defaultHourlyRate ? Number(profile.defaultHourlyRate) : 0
   } as SaveSettingsInput
 }
 
@@ -123,6 +125,7 @@ export async function saveSettings(data: SaveSettingsInput) {
     where: { id: user.id },
     data: {
       settings: settingsToSave as any,
+      defaultHourlyRate: data.defaultHourlyRate || 0
     }
   })
 

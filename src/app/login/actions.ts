@@ -23,6 +23,37 @@ export async function login(prevState: any, formData: FormData) {
   redirect('/dashboard')
 }
 
+export async function signup(prevState: any, formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const fullName = formData.get('fullName') as string
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: fullName,
+      },
+    },
+  })
+
+  if (error) {
+    return { success: false, message: error.message }
+  }
+
+  if (data.user && data.session) {
+    revalidatePath('/dashboard', 'layout')
+    redirect('/dashboard')
+  }
+
+  return { 
+    success: true, 
+    message: 'Check your email to confirm your account!' 
+  }
+}
+
 export async function loginWithGoogle() {
   const supabase = await createClient()
   const headersList = await headers()

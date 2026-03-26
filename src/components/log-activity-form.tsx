@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 
 type Evidence = {
   id: string;
-  type: 'file' | 'link' | 'text';
+  type: 'file' | 'link' | 'text' | 'observation' | 'commit';
   file?: File;
   content?: string;
   previewUrl?: string;
@@ -57,10 +57,13 @@ export function LogActivityForm({ projectId }: { projectId: string }) {
             }
         } else if (item.type === 'text/plain') {
             item.getAsString(text => {
-                if (text.startsWith('http://') || text.startsWith('https://')) {
-                    setEvidences(prev => [...prev, { id: Date.now().toString() + i, type: 'link', content: text }]);
+                const id = Date.now().toString() + i;
+                if (text.startsWith('http')) {
+                    setEvidences(prev => [...prev, { id, type: 'link', content: text }]);
+                } else if (/^[0-9a-f]{7,40}$/i.test(text)) {
+                    setEvidences(prev => [...prev, { id, type: 'commit', content: text }]);
                 } else {
-                    setEvidences(prev => [...prev, { id: Date.now().toString() + i, type: 'text', content: text }]);
+                    setEvidences(prev => [...prev, { id, type: 'text', content: text }]);
                 }
             });
         }
@@ -230,6 +233,19 @@ export function LogActivityForm({ projectId }: { projectId: string }) {
                 className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md" 
               />
             </div>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <input 
+                type="checkbox" 
+                id="is_paid" 
+                name="is_paid" 
+                value="true" 
+                className="w-5 h-5 accent-primary cursor-pointer rounded border-2 border-primary" 
+              />
+              <Label htmlFor="is_paid" className="cursor-pointer font-bold uppercase tracking-widest text-[11px] text-green-600 dark:text-green-400">
+                Mark as Paid (JÁ FOI PAGO)
+              </Label>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -275,7 +291,7 @@ export function LogActivityForm({ projectId }: { projectId: string }) {
                     )}
                     
                     <span className="text-xs truncate w-full flex text-center justify-center mt-2 z-10 bg-background/90 px-2 py-1 rounded relative font-medium shadow-sm">
-                      {ev.type === 'file' ? ev.file?.name : ev.type === 'link' ? 'Link Evidence' : 'Text Prompt/Note'}
+                      {ev.type === 'file' ? ev.file?.name : ev.type === 'link' ? 'Link Proof' : ev.type === 'commit' ? 'Git Commit Proof' : 'Observation/Note'}
                     </span>
                   </div>
                 ))}

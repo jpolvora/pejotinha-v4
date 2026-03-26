@@ -24,19 +24,25 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 
-export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
+  hasClientProjects?: boolean;
+  userRole?: string;
+}
+
+export function Sidebar({ className, hasClientProjects, userRole }: SidebarProps) {
   const pathname = usePathname()
 
   const routes = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard", active: pathname === "/dashboard" },
-    { label: "Clients", icon: Users, href: "/clients", active: pathname.includes("/clients") },
+    { label: "Clients", icon: Users, href: "/clients", active: pathname.includes("/clients"), hide: userRole === 'client' },
     { label: "Projects", icon: FolderKanban, href: "/projects", active: pathname.includes("/projects") },
-    { label: "Calendar", icon: Calendar, href: "/calendar", active: pathname.includes("/calendar") },
-    { label: "Billing", icon: Receipt, href: "/billing", active: pathname.includes("/billing") },
-    { label: "Financials", icon: Receipt, href: "/expenses", active: pathname.includes("/expenses") },
+    { label: "Client Area", icon: Users, href: "/client", active: pathname === "/client", show: hasClientProjects || userRole === 'client' },
+    { label: "Calendar", icon: Calendar, href: "/calendar", active: pathname.includes("/calendar"), hide: userRole === 'client' },
+    { label: "Billing", icon: Receipt, href: "/billing", active: pathname.includes("/billing"), hide: userRole === 'client' },
+    { label: "Financials", icon: Receipt, href: "/expenses", active: pathname.includes("/expenses"), hide: userRole === 'client' },
     { label: "Reports", icon: PieChart, href: "/reports", active: pathname.includes("/reports") },
     { label: "Settings", icon: Settings, href: "/settings", active: pathname === "/settings" },
-  ]
+  ].filter(r => (r.show === undefined || r.show) && !r.hide)
 
   const teams: { name: string; initial: string; href: string }[] = []
 

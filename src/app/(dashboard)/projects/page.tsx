@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Trash, Folder, Pencil } from "lucide-react";
 import Link from "next/link";
 
+import { ProjectFormFields } from "@/components/projects/project-form-fields";
+
 export default async function ProjectsPage(props: { searchParams?: Promise<{ customer?: string }> }) {
   const searchParams = props.searchParams ? await props.searchParams : {};
   const customerId = searchParams.customer;
@@ -32,26 +34,40 @@ export default async function ProjectsPage(props: { searchParams?: Promise<{ cus
               <p className="text-sm text-destructive">You must create a Client first to start a project.</p>
             ) : (
               <form action={createProject} className="space-y-4">
+                <ProjectFormFields />
                 <div className="space-y-2">
-                  <Label htmlFor="name">Project Name</Label>
-                  <Input id="name" name="name" placeholder="Website Redesign" required />
+                  <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description (optional)</Label>
+                  <Input 
+                    id="description" 
+                    name="description" 
+                    placeholder="Short description..." 
+                    className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description (optional)</Label>
-                  <Input id="description" name="description" placeholder="Short description..." />
+                  <Label htmlFor="hourly_rate" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Hourly Rate (Optional)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">R$</span>
+                    <Input 
+                      id="hourly_rate" 
+                      name="hourly_rate" 
+                      type="number" 
+                      step="0.01" 
+                      min="0" 
+                      placeholder="0.00" 
+                      className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md pl-10 font-bold"
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground italic">If empty, uses Client Rate or Global Freelancer Rate.</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="slug">Project Slug (for integrations)</Label>
-                  <Input id="slug" name="slug" placeholder="e.g. acme-corp" required />
-                  <p className="text-[10px] text-muted-foreground italic">Used in branch names: client/acme-corp/feature</p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hourly_rate">Hourly Rate</Label>
-                  <Input id="hourly_rate" name="hourly_rate" type="number" step="0.01" min="0" placeholder="e.g. 50" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tech_stacks">Tech Stacks (comma separated)</Label>
-                  <Input id="tech_stacks" name="tech_stacks" placeholder="React, Node.js, etc." />
+                  <Label htmlFor="tech_stacks" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tech Stacks (comma separated)</Label>
+                  <Input 
+                    id="tech_stacks" 
+                    name="tech_stacks" 
+                    placeholder="React, Node.js, etc." 
+                    className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="customer_id">Client</Label>

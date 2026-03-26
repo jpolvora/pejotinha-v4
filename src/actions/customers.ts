@@ -48,6 +48,7 @@ export async function createCustomer(formData: FormData) {
 
   const name = formData.get("name") as string;
   const email = formData.get("email") as string | null;
+  const hourlyRate = parseFloat(formData.get("hourly_rate") as string) || 0;
 
   if (!name) throw new Error("Name is required");
 
@@ -56,7 +57,8 @@ export async function createCustomer(formData: FormData) {
     .insert([{ 
       freelancer_id: user.id, 
       name, 
-      email 
+      email,
+      hourly_rate: hourlyRate
     }])
     .select()
     .single();
@@ -77,12 +79,13 @@ export async function updateCustomer(id: string, formData: FormData) {
 
   const name = formData.get("name") as string;
   const email = formData.get("email") as string | null;
+  const hourlyRate = parseFloat(formData.get("hourly_rate") as string) || 0;
 
   if (!name) throw new Error("Name is required");
 
   const { data, error } = await supabase
     .from("customers")
-    .update({ name, email })
+    .update({ name, email, hourly_rate: hourlyRate })
     .eq("id", id)
     .eq("freelancer_id", user.id)
     .select()

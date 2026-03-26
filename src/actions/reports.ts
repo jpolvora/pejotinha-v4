@@ -54,3 +54,54 @@ export async function getReportsData() {
 
   return { timePerProjectChart, timePerProject, dailyChartData };
 }
+export async function getDetailedProjectReport(projectId?: string, startDate?: string, endDate?: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const whereClause: any = {
+    project: {
+        OR: [
+            { freelancerId: user.id },
+            { clientProfileId: user.id }
+        ]
+    }
+  };
+
+  if (projectId) {
+    whereClause.projectId = projectId;
+  }
+
+  if (startDate || endDate) {
+    whereClause.startTime = {};
+    if (startDate) whereClause.startTime.gte = new Date(startDate);
+    if (endDate) {
+        const d = new Date(endDate);
+        d.setHours(23, 59, 59, 999);
+        whereClause.startTime.lte = d;
+    }
+  }
+
+  const activities = await prisma.activity.findMany({
+    where: whereClause,
+    include: {
+      project: {
+        include: { customer: true }
+      },
+      approvals: {
+        include: { client: { select: { fullName: true, email: true } } }
+      },
+      evidences: true
+    },
+    orderBy: { startTime: 'desc' }
+  });
+
+  const summary = activities.reduce((acc, a) => {
+    const min = a.durationMinutes || 0;
+    acc.totalMinutes += min;
+    acc.totalValue += Number(a.value) || 0;
+    return acc;
+  }, { totalMinutes: 0, totalValue: 0 });
+
+  return { activities, summary };
+}

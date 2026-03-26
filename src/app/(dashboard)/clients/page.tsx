@@ -32,6 +32,14 @@ export default async function ClientsPage() {
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" name="email" type="email" placeholder="contact@acmecorp.com" />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="hourly_rate">Default Hourly Rate (Optional)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">R$</span>
+                  <Input id="hourly_rate" name="hourly_rate" type="number" step="0.01" placeholder="0.00" className="pl-10 font-bold" />
+                </div>
+                <p className="text-[10px] text-muted-foreground italic">If empty, uses Global Freelancer Rate.</p>
+              </div>
               <SubmitButton label="Add Client" />
             </form>
           </CardContent>

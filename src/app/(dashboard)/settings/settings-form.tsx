@@ -98,7 +98,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       botToken: String(initialData?.telegramConfig?.botToken || ''),
       chatId: String(initialData?.telegramConfig?.chatId || ''),
     },
-    webhookSecret: initialData?.webhookSecret || ''
+    webhookSecret: initialData?.webhookSecret || '',
+    defaultHourlyRate: initialData?.defaultHourlyRate || 0
   })
 
   const [isRotating, setIsRotating] = useState(false)
@@ -126,7 +127,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     }))
   }
 
-  const handleProviderChange = (newProvider: string) => {
+  const handleProviderChange = (newProvider: string | null) => {
+    if (!newProvider) return
     setProvider(newProvider)
     const defaultEndpoint = ENDPOINTS[newProvider]?.[0]?.value || ''
     const defaultModel = MODELS[newProvider]?.[0]?.value || ''
@@ -212,6 +214,10 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     return `${baseUrl}/chat/completions (POST)`
   }
 
+  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, defaultHourlyRate: parseFloat(e.target.value) || 0 }))
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card className="border-border shadow-sm overflow-hidden">
@@ -264,7 +270,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                 {!isCustomMode.baseUrl && provider !== 'custom' ? (
                   <Select 
                     value={formData.aiConfig.baseUrl} 
-                    onValueChange={(val) => {
+                    onValueChange={(val: string | null) => {
+                      if (!val) return
                       if (val === 'custom') setIsCustomMode(p => ({ ...p, baseUrl: true }))
                       else setFormData(p => ({ ...p, aiConfig: { ...p.aiConfig, baseUrl: val }}))
                     }}
@@ -305,7 +312,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                 {!isCustomMode.model && provider !== 'custom' ? (
                   <Select 
                     value={formData.aiConfig.model} 
-                    onValueChange={(val) => {
+                    onValueChange={(val: string | null) => {
+                      if (!val) return
                       if (val === 'custom') setIsCustomMode(p => ({ ...p, model: true }))
                       else setFormData(p => ({ ...p, aiConfig: { ...p.aiConfig, model: val }}))
                     }}
@@ -384,6 +392,39 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                 onChange={handleTelegramChange}
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border shadow-sm">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" />
+            <CardTitle>Configurações Financeiras</CardTitle>
+          </div>
+          <CardDescription>
+            Defina valores padrão para cobrança.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-2 max-w-xs">
+            <Label htmlFor="defaultHourlyRate">Valor/Hora Global (Padrão Freelancer)</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">R$</span>
+              <Input
+                id="defaultHourlyRate"
+                name="defaultHourlyRate"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                className="pl-10 font-bold"
+                value={formData.defaultHourlyRate}
+                onChange={handleRateChange}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground italic">
+              Este valor será usado como fallback se não houver valor definido no cliente ou projeto.
+            </p>
           </div>
         </CardContent>
       </Card>

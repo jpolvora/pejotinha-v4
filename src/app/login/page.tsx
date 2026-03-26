@@ -1,12 +1,12 @@
 "use client"
 
-import { useActionState } from "react"
-import { login, loginWithGoogle } from "./actions"
+import { useActionState, useState } from "react"
+import { login, loginWithGoogle, signup } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, ArrowRight, LayoutDashboard } from "lucide-react"
+import { AlertCircle, ArrowRight, LayoutDashboard, User } from "lucide-react"
 
 const initialState = {
   success: true,
@@ -25,7 +25,15 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 export default function LoginPage() {
-  const [state, formAction, isPending] = useActionState(login, initialState)
+  const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [state, formAction, isPending] = useActionState(
+    mode === 'login' ? login : signup, 
+    initialState
+  )
+
+  const toggleMode = () => {
+    setMode(prev => prev === 'login' ? 'signup' : 'login')
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
@@ -36,21 +44,46 @@ export default function LoginPage() {
       
       <Card className="w-full max-w-md shadow-lg border-2 border-border/50 rounded-xl">
         <CardHeader className="space-y-3 pb-6 border-b border-border/50 mb-6 bg-card">
-          <CardTitle className="text-3xl font-bold tracking-tight">Access Control</CardTitle>
-          <CardDescription className="text-base">
-            Sign in to your Pejotinha Workspace account
+          <CardTitle className="text-3xl font-bold tracking-tight">
+            {mode === 'login' ? 'Access Control' : 'Create Account'}
+          </CardTitle>
+          <CardDescription className="text-base text-balance">
+            {mode === 'login' 
+              ? 'Sign in to your Pejotinha Workspace account' 
+              : 'Join Pejotinha as a freelancer and start tracking your work'}
           </CardDescription>
         </CardHeader>
         
         <form action={formAction}>
           <CardContent className="space-y-5">
-            {!state.success && (
-              <div className="p-3 mb-4 rounded-md border-l-4 border-destructive bg-destructive/10 text-destructive text-sm font-medium flex gap-2 items-center">
-                <AlertCircle className="w-4 h-4" />
+            {state.message && (
+              <div className={`p-3 mb-4 rounded-md border-l-4 flex gap-2 items-center ${
+                state.success 
+                  ? 'border-primary bg-primary/10 text-primary font-semibold' 
+                  : 'border-destructive bg-destructive/10 text-destructive font-medium'
+              }`}>
+                {state.success ? <LayoutDashboard className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                 {state.message}
               </div>
             )}
             
+            {mode === 'signup' && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <Label htmlFor="fullName" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Full Name</Label>
+                <div className="relative">
+                  <Input 
+                    id="fullName" 
+                    name="fullName" 
+                    type="text" 
+                    placeholder="John Doe" 
+                    required 
+                    className="h-12 border-2 pl-10 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md"
+                  />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">User Email</Label>
               <Input 
@@ -67,14 +100,16 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
-                <a href="#" className="text-xs font-semibold text-primary hover:underline">Forgot?</a>
+                {mode === 'login' && (
+                  <a href="#" className="text-xs font-semibold text-primary hover:underline">Forgot?</a>
+                )}
               </div>
               <Input 
                 id="password" 
                 name="password" 
                 type="password" 
                 required 
-                autoComplete="current-password"
+                autoComplete={mode === 'login' ? "current-password" : "new-password"}
                 className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md"
               />
             </div>
@@ -85,11 +120,21 @@ export default function LoginPage() {
               disabled={isPending}
               className="w-full h-12 text-base font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-between px-6 rounded-md"
             >
-              <span>{isPending ? "Authenticating..." : "Authorize Access"}</span>
+              <span>{isPending ? "Processing..." : (mode === 'login' ? "Authorize Access" : "Create Account")}</span>
               <ArrowRight className="w-5 h-5" />
             </Button>
 
-            <div className="relative w-full">
+            <button 
+              type="button"
+              onClick={toggleMode}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
+            >
+              {mode === 'login' 
+                ? "Don't have an account? Sign up" 
+                : "Already have an account? Sign in"}
+            </button>
+
+            <div className="relative w-full my-1">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border/60" />
               </div>

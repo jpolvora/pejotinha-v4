@@ -86,7 +86,7 @@ if (apiUrl && anonKey) {
   }
 
   // Adicionar ENCRYPTION_SECRET se estiver vazio ou placeholder
-  const hasEncryptionSecret = envContent.match(/^ENCRYPTION_SECRET=(?!your_32_byte_secret_here_.*).+/m);
+  const hasEncryptionSecret = envContent.match(/^ENCRYPTION_SECRET=(?!("|')?(your_32_byte_secret_here_|your_32_chars_long_encryption_secret).*("|')?).+/m);
   if (!hasEncryptionSecret) {
     console.log('🔐 Gerando chave de criptografia AES-256-GCM...');
     const secret = crypto.randomBytes(32).toString('hex');

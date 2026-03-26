@@ -58,11 +58,11 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 - [x] **Cálculo de Tempo Real:** Atualizar `durationMinutes` automaticamente vindo do `startTime/endTime`.
 - [x] **Slug Automático:** Projetos geram slugs amigáveis em tempo real na criação.
 - [x] **Timeline Visual:** Componente unificado de atividades e eventos pessoais no Dashboard.
-- [ ] **Sistema de Toasts Premium:** Padronizar feedbacks visuais com Toasts customizados.
+- [x] **Sistema de Toasts Premium:** Padronizar feedbacks visuais com Toasts customizados.
 
 ### 2. Expansão de Features
 - [x] **Relatórios Avançados:** Filtros dinâmicos por período, cliente e projeto com gráficos de produtividade.
-- [ ] **Proofs UI Pro:** Galeria de evidências melhorada, com preview de imagens e links diretos para commits/documentos.
+- [x] **Proofs UI Pro:** Galeria de evidências melhorada, com preview de imagens e links diretos para commits/documentos.
 - [x] **Exportação PDF/Excel:** Para relatórios de atividades via Print/PDF.
 - [x] **Client Invites:** Sistema de convites por e-mail e aceitação via token.
 

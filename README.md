@@ -62,6 +62,12 @@ Para rodar este projeto localmente, você precisará de:
    npm run dev
    ```
 
+4. **Verificação de Sanidade (Opcional)**:
+   *Garante que Lint, Tipos e Conexão com o Banco/Supabase estão OK.*
+   ```bash
+   npm run check:all
+   ```
+
 ---
 
 ## 🔄 Workflow de Migrações (Hybrid Approach)

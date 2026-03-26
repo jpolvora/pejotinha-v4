@@ -12,7 +12,9 @@
     "reset:db": "npx prisma db push --force-reset && node scripts/sync-auth.mjs && npx prisma db seed && npm run db:setup-supabase",
     "deploy": "sh deploy.sh",
     "prepare": "husky",
-    "db:setup-supabase": "npx prisma db execute --file scripts/setup-supabase.sql --schema prisma/schema.prisma"
+    "db:setup-supabase": "npx prisma db execute --file scripts/setup-supabase.sql --schema prisma/schema.prisma",
+    "type-check": "tsc --noEmit",
+    "check:all": "npm run lint && npm run type-check && node scripts/check-sanity.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

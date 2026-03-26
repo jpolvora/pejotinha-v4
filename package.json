@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "stop": "npx supabase stop",
-    "setup": "npm install && node scripts/setup-env.mjs && npx prisma db push && node scripts/sync-auth.mjs && npx prisma db seed && npx supabase db query \"GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role\" && npx supabase db query \"GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role\"",
-    "reset:db": "npx prisma db push --force-reset && node scripts/sync-auth.mjs && npx prisma db seed && npx supabase db query \"GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role\" && npx supabase db query \"GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role\"",
+    "setup": "npm install && node scripts/setup-env.mjs && npx prisma db push && node scripts/sync-auth.mjs && npx prisma db seed && npx supabase db query -f scripts/fix-permissions.sql",
+    "reset:db": "npx prisma db push --force-reset && node scripts/sync-auth.mjs && npx prisma db seed && npx supabase db query -f scripts/fix-permissions.sql",
     "deploy": "sh deploy.sh",
     "prepare": "husky"
   },

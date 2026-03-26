@@ -15,10 +15,71 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useToast } from '@/hooks/use-toast'
-import { Bot, Save, Loader2, Cpu, Receipt, Share2, RefreshCw, Copy, Check } from 'lucide-react'
+import { Bot, Save, Loader2, Cpu, Receipt, Share2, RefreshCw, Copy, Check, Globe, Zap, Settings2 } from 'lucide-react'
 
 interface SettingsFormProps {
   initialData: SaveSettingsInput | null
+}
+
+const PROVIDERS = [
+  { id: 'gemini', label: 'Google Gemini (Native)', icon: Zap },
+  { id: 'openai', label: 'OpenAI', icon: Bot },
+  { id: 'anthropic', label: 'Anthropic Claude', icon: Cpu },
+  { id: 'groq', label: 'Groq Cloud', icon: Zap },
+  { id: 'mistral', label: 'Mistral AI', icon: Globe },
+  { id: 'deepseek', label: 'DeepSeek', icon: Globe },
+  { id: 'custom', label: 'Custom Provider', icon: Settings2 },
+]
+
+const ENDPOINTS: Record<string, { label: string, value: string }[]> = {
+  gemini: [
+    { label: 'Google Generative Language (Stable v1)', value: 'https://generativelanguage.googleapis.com/v1' },
+    { label: 'Google Generative Language (Beta v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta' },
+    { label: 'Google OpenAI Shim (v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta/openai/' },
+  ],
+  openai: [{ label: 'Official OpenAI API (v1)', value: 'https://api.openai.com/v1' }],
+  anthropic: [{ label: 'Anthropic API (v1)', value: 'https://api.anthropic.com/v1' }],
+  groq: [{ label: 'Groq API (v1)', value: 'https://api.groq.com/openai/v1' }],
+  mistral: [{ label: 'Mistral API (v1)', value: 'https://api.mistral.ai/v1' }],
+  deepseek: [{ label: 'DeepSeek API (v1)', value: 'https://api.deepseek.com/v1' }],
+  custom: [],
+}
+
+const MODELS: Record<string, { label: string, value: string }[]> = {
+  gemini: [
+    { label: 'Gemini 2.0 Flash (Fastest)', value: 'gemini-2.0-flash' },
+    { label: 'Gemini 2.0 Flash-Lite', value: 'gemini-2.0-flash-lite' },
+    { label: 'Gemini 2.0 Pro Exp', value: 'gemini-2.0-pro-exp-02-05' },
+    { label: 'Gemini 1.5 Pro (Standard)', value: 'gemini-1.5-pro' },
+    { label: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
+  ],
+  openai: [
+    { label: 'GPT-4o (Latest)', value: 'gpt-4o' },
+    { label: 'GPT-4o-mini', value: 'gpt-4o-mini' },
+    { label: 'o1', value: 'o1' },
+    { label: 'o1-mini', value: 'o1-mini' },
+    { label: 'GPT-4 Turbo', value: 'gpt-4-turbo' },
+  ],
+  anthropic: [
+    { label: 'Claude 3.5 Sonnet', value: 'claude-3-5-sonnet-latest' },
+    { label: 'Claude 3.5 Haiku', value: 'claude-3-5-haiku-latest' },
+    { label: 'Claude 3 Opus', value: 'claude-3-opus-latest' },
+  ],
+  groq: [
+    { label: 'Llama 3.3 70B Versatile', value: 'llama-3.3-70b-versatile' },
+    { label: 'Llama 3.1 8B Instant', value: 'llama-3.1-8b-instant' },
+    { label: 'Mixtral 8x7B Instructions', value: 'mixtral-8x7b-32768' },
+  ],
+  deepseek: [
+    { label: 'DeepSeek Chat (V3)', value: 'deepseek-chat' },
+    { label: 'DeepSeek Reasoner (R1)', value: 'deepseek-reasoner' },
+  ],
+  mistral: [
+    { label: 'Mistral Large (Latest)', value: 'mistral-large-latest' },
+    { label: 'Mistral Small (Latest)', value: 'mistral-small-latest' },
+    { label: 'Codestral', value: 'codestral-latest' },
+  ],
+  custom: [],
 }
 
 export function SettingsForm({ initialData }: SettingsFormProps) {
@@ -30,8 +91,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     aiConfig: {
       provider: String(initialData?.aiConfig?.provider || 'gemini'),
       apiKey: String(initialData?.aiConfig?.apiKey || ''),
-      baseUrl: String(initialData?.aiConfig?.baseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai/'),
-      model: String(initialData?.aiConfig?.model || 'gemini-3.1-flash-lite'),
+      baseUrl: String(initialData?.aiConfig?.baseUrl || 'https://generativelanguage.googleapis.com/v1beta'),
+      model: String(initialData?.aiConfig?.model || 'gemini-2.0-flash'),
     },
     telegramConfig: {
       botToken: String(initialData?.telegramConfig?.botToken || ''),
@@ -44,37 +105,18 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
   const [copied, setCopied] = useState(false)
   const [originUrl, setOriginUrl] = useState('https://pejotinha-v4.vercel.app')
 
-  // Hook to detect hydration completion and update client-side values
+  // Hook to detect hydration completion
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setOriginUrl(window.location.origin)
     }
   }, [])
 
-  const [modelType, setModelType] = useState<string>(
-    [
-      'gemini-3.1-pro', 'gemini-3.1-flash-lite', 'gemini-2.5-flash', 'gemini-1.5-flash',
-      'gpt-5.4-thinking', 'gpt-5.4-mini', 'gpt-5.3-instant', 'gpt-4o'
-    ].includes(String(formData.aiConfig.model)) 
-      ? String(formData.aiConfig.model) 
-      : 'custom'
-  )
-
-  const commonBaseUrls = [
-    { label: 'Google Gemini (v1beta - OpenAI Shim)', value: 'https://generativelanguage.googleapis.com/v1beta/openai/' },
-    { label: 'Google Gemini (v1 - OpenAI Shim)', value: 'https://generativelanguage.googleapis.com/v1/openai/' },
-    { label: 'Google Gemini (Native v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta' },
-    { label: 'Google Gemini (Native v1 - Stable)', value: 'https://generativelanguage.googleapis.com/v1' },
-    { label: 'OpenAI API (v1)', value: 'https://api.openai.com/v1' },
-    { label: 'Groq Cloud', value: 'https://api.groq.com/openai/v1' },
-    { label: 'Mistral AI', value: 'https://api.mistral.ai/v1' },
-    { label: 'DeepSeek', value: 'https://api.deepseek.com/v1' },
-    { label: 'Local (Ollama)', value: 'http://localhost:11434/v1' },
-    { label: 'Local (LM Studio)', value: 'http://localhost:1234/v1' },
-  ]
-  const [urlType, setUrlType] = useState<string>(
-    commonBaseUrls.some(u => u.value === formData.aiConfig.baseUrl) ? formData.aiConfig.baseUrl : 'custom'
-  )
+  const [provider, setProvider] = useState<string>(formData.aiConfig.provider)
+  const [isCustomMode, setIsCustomMode] = useState({
+    baseUrl: !ENDPOINTS[formData.aiConfig.provider]?.some(e => e.value === formData.aiConfig.baseUrl),
+    model: !MODELS[formData.aiConfig.provider]?.some(m => m.value === formData.aiConfig.model),
+  })
 
   const handleAiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -82,6 +124,26 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       ...prev, 
       aiConfig: { ...prev.aiConfig, [name]: value } 
     }))
+  }
+
+  const handleProviderChange = (newProvider: string) => {
+    setProvider(newProvider)
+    const defaultEndpoint = ENDPOINTS[newProvider]?.[0]?.value || ''
+    const defaultModel = MODELS[newProvider]?.[0]?.value || ''
+    
+    setFormData(prev => ({
+      ...prev,
+      aiConfig: {
+        ...prev.aiConfig,
+        provider: newProvider,
+        baseUrl: defaultEndpoint,
+        model: defaultModel
+      }
+    }))
+    setIsCustomMode({
+      baseUrl: newProvider === 'custom',
+      model: newProvider === 'custom'
+    })
   }
 
   const handleTelegramChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,24 +181,16 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
   }
 
   const handleRotateSecret = async () => {
-    if (!confirm('Tem certeza que deseja rotacionar sua chave de webhook? As integrações existentes pararão de funcionar até serem atualizadas.')) return
-    
+    if (!confirm('Tem certeza que deseja rotacionar sua chave de webhook?')) return
     setIsRotating(true)
     try {
       const result = await rotateWebhookSecret()
       if (result.success) {
         setFormData(prev => ({ ...prev, webhookSecret: result.secret! }))
-        toast({
-          title: 'Sucesso',
-          description: 'Nova chave de integração gerada.',
-        })
+        toast({ title: 'Sucesso', description: 'Nova chave de integração gerada.' })
       }
     } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Falha ao rotacionar a chave.',
-        variant: 'destructive',
-      })
+      toast({ title: 'Erro', description: 'Falha ao rotacionar a chave.', variant: 'destructive' })
     } finally {
       setIsRotating(false)
     }
@@ -146,132 +200,154 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-    toast({
-      title: 'Copiado',
-      description: 'Chave copiada para a área de transferência.',
-    })
+    toast({ title: 'Copiado', description: 'Chave copiada para a área de transferência.' })
+  }
+
+  // Calculate Request URL Preview
+  const getRequestPreview = () => {
+    const { provider: p, baseUrl, model } = formData.aiConfig
+    if (p === 'gemini' && !baseUrl.includes('/openai')) {
+      return `${baseUrl}/models/${model}:generateContent`
+    }
+    return `${baseUrl}/chat/completions (POST)`
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Card className="border-border shadow-sm">
-        <CardHeader>
+      <Card className="border-border shadow-sm overflow-hidden">
+        <CardHeader className="bg-muted/30 pb-4">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-primary" />
-            <CardTitle>Inteligência Artificial (Gemini/OpenAI/Custom)</CardTitle>
+            <CardTitle>Inteligência Artificial (LLM)</CardTitle>
           </div>
           <CardDescription>
-            Configure sua chave de API para habilitar a extração mágica de logs de atividades via linguagem natural. 
+            Configure seu provedor para habilitar a extração mágica de logs de atividades.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6 pt-6">
           <div className="grid gap-2">
-            <Label htmlFor="apiKey">Chave de API (API Key)</Label>
+            <Label htmlFor="apiKey">Chave de API (Secret Key)</Label>
             <Input
               id="apiKey"
               name="apiKey"
               type="password"
-              placeholder="Sua chave de API secreta (Ex: AIzaSy...)"
+              placeholder="Sua chave de API secreta (Ex: AIzaSy... ou sk-...)"
               value={formData.aiConfig.apiKey}
               onChange={handleAiChange}
               required
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="url-select">Provedor / Base URL</Label>
-              <Select 
-                value={urlType} 
-                onValueChange={(value: string | null) => {
-                  if (!value) return;
-                  setUrlType(value);
-                  if (value !== 'custom') {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      aiConfig: { ...prev.aiConfig, baseUrl: value } 
-                    }));
-                  }
-                }}
-              >
-                <SelectTrigger id="url-select">
-                  <SelectValue placeholder="Selecione o provedor" />
+              <Label>Provedor</Label>
+              <Select value={provider} onValueChange={handleProviderChange}>
+                <SelectTrigger>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {commonBaseUrls.map(u => (
-                    <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                  {PROVIDERS.map(p => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <div className="flex items-center gap-2">
+                        <p.icon className="h-3 w-3" />
+                        {p.label}
+                      </div>
+                    </SelectItem>
                   ))}
-                  <SelectItem value="custom">Outro (URL Customizada)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="model-select">Modelo de IA</Label>
-              <Select 
-                value={modelType} 
-                onValueChange={(value: string | null) => {
-                  if (!value) return;
-                  setModelType(value);
-                  if (value !== 'custom') {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      aiConfig: { ...prev.aiConfig, model: value } 
-                    }));
-                  }
-                }}
-              >
-                <SelectTrigger id="model-select">
-                  <SelectValue placeholder="Selecione um modelo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gemini-3.1-pro">Gemini 3.1 Pro (Estado da arte ✨)</SelectItem>
-                  <SelectItem value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite (Super Rápido)</SelectItem>
-                  <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash (Equilibrado)</SelectItem>
-                  <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash (Legado)</SelectItem>
-                  <SelectItem value="gpt-5.4-thinking">GPT-5.4 Thinking (Raciocínio Avançado)</SelectItem>
-                  <SelectItem value="gpt-5.4-mini">GPT-5.4 Mini (Eficiente)</SelectItem>
-                  <SelectItem value="gpt-5.3-instant">GPT-5.3 Instant</SelectItem>
-                  <SelectItem value="gpt-4o">GPT-4o (Legado)</SelectItem>
-                  <SelectItem value="custom">Outro (Especificar manualmente)</SelectItem>
-                </SelectContent>
-              </Select>
+
+            <div className="grid gap-2 col-span-1 md:col-span-2">
+              <Label>Base URL / Endpoint</Label>
+              <div className="flex gap-2">
+                {!isCustomMode.baseUrl && provider !== 'custom' ? (
+                  <Select 
+                    value={formData.aiConfig.baseUrl} 
+                    onValueChange={(val) => {
+                      if (val === 'custom') setIsCustomMode(p => ({ ...p, baseUrl: true }))
+                      else setFormData(p => ({ ...p, aiConfig: { ...p.aiConfig, baseUrl: val }}))
+                    }}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ENDPOINTS[provider]?.map(e => (
+                        <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>
+                      ))}
+                      <SelectItem value="custom">✏️ Manual (Personalizado)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="flex-1 flex gap-2">
+                    <Input 
+                      name="baseUrl" 
+                      value={formData.aiConfig.baseUrl} 
+                      onChange={handleAiChange} 
+                      placeholder="https://api.proxy.com/v1"
+                    />
+                    {provider !== 'custom' && (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setIsCustomMode(p => ({ ...p, baseUrl: false }))}>
+                        Reset
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {urlType === 'custom' && (
-            <div className="grid gap-2 pt-2 animate-in fade-in slide-in-from-top-2">
-              <Label htmlFor="baseUrl">URL do Endpoint Customizada</Label>
-              <Input
-                id="baseUrl"
-                name="baseUrl"
-                type="url"
-                placeholder="https://sua-api.com/v1/"
-                value={formData.aiConfig.baseUrl}
-                onChange={handleAiChange}
-                required
-              />
-              <p className="text-[10px] text-muted-foreground italic">Inclua o /v1 ou /openai/ se necessário.</p>
-            </div>
-          )}
-
-          {modelType === 'custom' && (
-            <div className="grid gap-2 pt-2 animate-in fade-in slide-in-from-top-2">
-              <Label htmlFor="model">Identificador do Modelo Customizado</Label>
-              <div className="relative">
-                <Cpu className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="model"
-                  name="model"
-                  placeholder="Ex: o1-preview ou meu-modelo-lms"
-                  className="pl-9"
-                  value={formData.aiConfig.model}
-                  onChange={handleAiChange}
-                  required
-                />
+          <div className="grid grid-cols-1 gap-4">
+            <div className="grid gap-2">
+              <Label>Modelo</Label>
+              <div className="flex gap-2">
+                {!isCustomMode.model && provider !== 'custom' ? (
+                  <Select 
+                    value={formData.aiConfig.model} 
+                    onValueChange={(val) => {
+                      if (val === 'custom') setIsCustomMode(p => ({ ...p, model: true }))
+                      else setFormData(p => ({ ...p, aiConfig: { ...p.aiConfig, model: val }}))
+                    }}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MODELS[provider]?.map(m => (
+                        <SelectItem key={m.value} value={m.value}>{m.label} ({m.value})</SelectItem>
+                      ))}
+                      <SelectItem value="custom">✏️ Manual (Personalizado)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="flex-1 flex gap-2">
+                    <Input 
+                      name="model" 
+                      value={formData.aiConfig.model} 
+                      onChange={handleAiChange} 
+                      placeholder="Identificador do modelo (Ex: gpt-4o)"
+                    />
+                    {provider !== 'custom' && (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setIsCustomMode(p => ({ ...p, model: false }))}>
+                        Reset
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
-              <p className="text-[10px] text-muted-foreground italic">Use o identificador exato da API do seu provedor.</p>
             </div>
-          )}
+          </div>
+
+          <div className="p-4 rounded-lg bg-black/5 border border-dashed flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preview da Chamada de API</span>
+              <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">{provider.toUpperCase()}</span>
+            </div>
+            <code className="text-[11px] font-mono break-all text-primary/80">
+              {getRequestPreview()}
+            </code>
+          </div>
         </CardContent>
       </Card>
 
@@ -282,13 +358,13 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
             <CardTitle>Integração Telegram</CardTitle>
           </div>
           <CardDescription>
-            Configure seu bot do Telegram para criar tarefas e logar atividades usando linguagem natural.
+            Configure seu bot para logar atividades via linguagem natural.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="botToken">Token do Bot (Opcional para Webhook)</Label>
+              <Label htmlFor="botToken">Token do Bot</Label>
               <Input
                 id="botToken"
                 name="botToken"
@@ -299,7 +375,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="chatId">Seu Chat ID (Telegram)</Label>
+              <Label htmlFor="chatId">Seu Chat ID</Label>
               <Input
                 id="chatId"
                 name="chatId"
@@ -309,94 +385,41 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
               />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Para descobrir seu Chat ID, envie uma mensagem para o bot @userinfobot ou similar no Telegram.
-          </p>
         </CardContent>
       </Card>
 
+      <Card className="border-border shadow-sm px-6 py-4 flex justify-end gap-4 bg-muted/20">
+        <Button type="submit" disabled={isPending} className="gap-2">
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          Salvar Configurações
+        </Button>
+      </Card>
+      
+      {/* External Integrations Section (Webhooks) - Minimal version for space */}
       <Card className="border-border shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Share2 className="h-5 w-5 text-primary" />
-            <CardTitle>Integrações Externas (Webhooks)</CardTitle>
+            <CardTitle>Webhooks & API Key</CardTitle>
           </div>
-          <CardDescription>
-            Use esta chave para integrar o Pejotinha com Git, Azure DevOps e outras ferramentas.
-          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label>Sua Chave de Webhook (PEJOTINHA_WEBHOOK_SECRET)</Label>
-              <div className="flex gap-2">
+        <CardContent>
+           <div className="flex gap-2">
                 <Input
                   readOnly
                   type="password"
                   value={formData.webhookSecret || 'Nenhuma chave gerada'}
                   className="font-mono text-xs bg-muted/50"
                 />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => formData.webhookSecret && copyToClipboard(formData.webhookSecret)}
-                  disabled={!formData.webhookSecret}
-                >
+                <Button type="button" variant="outline" size="icon" onClick={() => formData.webhookSecret && copyToClipboard(formData.webhookSecret)}>
                   {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                 </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="icon"
-                  onClick={handleRotateSecret}
-                  disabled={isRotating}
-                  title="Gerar nova chave"
-                >
+                <Button type="button" variant="outline" size="icon" onClick={handleRotateSecret} disabled={isRotating}>
                   <RefreshCw className={`h-4 w-4 ${isRotating ? 'animate-spin' : ''}`} />
                 </Button>
-              </div>
-              <p className="text-[10px] text-muted-foreground italic">
-                Esta chave é usada no header <code>Authorization: Bearer {'<chave>'}</code> para autenticar chamadas de API.
-              </p>
             </div>
-            
-            <div className="rounded-lg bg-muted/30 p-4 border text-xs">
-              <p className="font-semibold mb-2">Como usar Git + Husky:</p>
-              <div className="relative">
-                <pre className="overflow-x-auto p-3 bg-black/80 text-green-400 rounded-md font-mono text-[10px] leading-relaxed">
-{`# .husky/post-commit
-#!/bin/sh
-COMMIT_HASH=$(git rev-parse HEAD)
-COMMIT_MSG=$(git log -1 --pretty=%B)
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-FILES=$(git diff-tree --no-commit-id -r --name-only HEAD | tr '\\n' ',')
-CLIENT_SLUG=$(echo "$BRANCH" | sed -n 's|client/\\([^/]*\\)/.*|\\1|p')
-
-curl -s -X POST "${originUrl}/api/integrations/git/commit" \\
-  -H "Authorization: Bearer ${formData.webhookSecret || 'SUA_CHAVE'}" \\
-  -H "Content-Type: application/json" \\
-  -d "{
-    \\"hash\\": \\"$COMMIT_HASH\\",
-    \\"message\\": \\"$COMMIT_MSG\\",
-    \\"branch\\": \\"$BRANCH\\",
-    \\"client_slug\\": \\"$CLIENT_SLUG\\",
-    \\"files_changed\\": \\"$FILES\\",
-    \\"timestamp\\": \\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\\"
-  }" &`}
-                </pre>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
-
-      <CardFooter className="py-3 flex justify-end">
-        <Button type="submit" disabled={isPending} className="gap-2">
-          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Salvar Todas as Configurações
-        </Button>
-      </CardFooter>
     </form>
   )
 }

@@ -2,6 +2,7 @@
 
 import { createOpenAI } from '@ai-sdk/openai'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createAnthropic } from '@ai-sdk/anthropic'
 import { generateText } from 'ai'
 import { getSettings } from './settings'
 
@@ -18,25 +19,28 @@ async function getAIModel() {
 
   let aiModel;
   
-  const isGoogleHost = baseUrl && baseUrl.includes('generativelanguage.googleapis.com');
-  const isNativeGoogle = provider === 'gemini' || (isGoogleHost && !baseUrl.includes('/openai'));
-
-  if (isNativeGoogle || isGoogleHost) {
-    const isLegacyModel = model && (model.includes('1.5') || model.includes('1.0'));
-    
+  // Decide which SDK to use based on provider and URL
+  if (provider === 'gemini' && !baseUrl.includes('/openai')) {
+    // Native Google SDK
     const google = createGoogleGenerativeAI({
-      apiKey,
-      baseURL: isGoogleHost && baseUrl.includes('/openai') 
-        ? baseUrl.split('/openai')[0] 
-        : (isGoogleHost && isLegacyModel && baseUrl.includes('/v1') ? baseUrl.replace('/v1', '/v1beta') : baseUrl),
-    })
-    aiModel = google(model || 'gemini-3.1-flash-lite')
-  } else {
-    const aiProvider = createOpenAI({
       apiKey,
       baseURL: baseUrl,
     })
-    aiModel = aiProvider.chat(model || 'gpt-5.4-mini')
+    aiModel = google(model)
+  } else if (provider === 'anthropic') {
+    // Anthropic SDK
+    const anthropic = createAnthropic({
+      apiKey,
+      baseURL: baseUrl || undefined,
+    })
+    aiModel = anthropic(model)
+  } else {
+    // OpenAI Compatible SDK (OpenAI, Groq, Mistral, DeepSeek, Google-OpenAI-Shim, etc.)
+    const openai = createOpenAI({
+      apiKey,
+      baseURL: baseUrl,
+    })
+    aiModel = openai.chat(model)
   }
 
   return aiModel

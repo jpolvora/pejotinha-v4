@@ -34,14 +34,14 @@ export function Sidebar({ className, hasClientProjects, userRole }: SidebarProps
 
   const routes = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard", active: pathname === "/dashboard" },
-    { label: "Clients", icon: Users, href: "/clients", active: pathname.includes("/clients"), hide: userRole === 'client' },
-    { label: "Projects", icon: FolderKanban, href: "/projects", active: pathname.includes("/projects") },
-    { label: "Client Area", icon: Users, href: "/client", active: pathname === "/client", show: hasClientProjects || userRole === 'client' },
-    { label: "Calendar", icon: Calendar, href: "/calendar", active: pathname.includes("/calendar"), hide: userRole === 'client' },
-    { label: "Billing", icon: Receipt, href: "/billing", active: pathname.includes("/billing"), hide: userRole === 'client' },
-    { label: "Financials", icon: Receipt, href: "/expenses", active: pathname.includes("/expenses"), hide: userRole === 'client' },
-    { label: "Reports", icon: PieChart, href: "/reports", active: pathname.includes("/reports") },
-    { label: "Settings", icon: Settings, href: "/settings", active: pathname === "/settings" },
+    { label: "Clientes", icon: Users, href: "/clients", active: pathname.includes("/clients"), hide: userRole === 'client' },
+    { label: "Projetos", icon: FolderKanban, href: "/projects", active: pathname.includes("/projects") },
+    { label: "Área do Cliente", icon: Users, href: "/client", active: pathname === "/client" },
+    { label: "Calendário", icon: Calendar, href: "/calendar", active: pathname.includes("/calendar"), hide: userRole === 'client' },
+    { label: "Cobrança", icon: Receipt, href: "/billing", active: pathname.includes("/billing"), hide: userRole === 'client' },
+    { label: "Financeiro", icon: Receipt, href: "/expenses", active: pathname.includes("/expenses"), hide: userRole === 'client' },
+    { label: "Relatórios", icon: PieChart, href: "/reports", active: pathname.includes("/reports") },
+    { label: "Configurações", icon: Settings, href: "/settings", active: pathname === "/settings" },
   ].filter(r => (r.show === undefined || r.show) && !r.hide)
 
   const teams: { name: string; initial: string; href: string }[] = []

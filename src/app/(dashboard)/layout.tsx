@@ -19,7 +19,12 @@ export default async function DashboardLayout({
     userRole = profile?.role || 'freelancer';
 
     const clientProject = await prisma.project.findFirst({
-      where: { clientProfileId: user.id }
+      where: {
+        OR: [
+          { clientProfileId: user.id },
+          { projectAccess: { some: { profileId: user.id } } }
+        ]
+      }
     });
     hasClientProjects = !!clientProject;
   }

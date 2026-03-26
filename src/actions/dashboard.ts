@@ -113,7 +113,10 @@ export async function getIntegratedTimeline() {
     where: isFreelancer
       ? { project: { freelancerId: user.id } }
       : { project: { clientProfileId: user.id } },
-    include: { project: { select: { name: true, freelancerId: true } } },
+    include: { 
+      project: { select: { name: true, slug: true, freelancerId: true } },
+      evidences: { select: { evidenceType: true } }
+    },
     orderBy: { startTime: 'desc' },
     take: 50,
   });
@@ -127,14 +130,20 @@ export async function getIntegratedTimeline() {
     endTime: Date | null;
     durationMinutes?: number;
     proofUrl?: string | null;
+    source?: string;
+    projectSlug?: string | null;
+    evidenceCount?: number;
   }[] = activities.map(act => ({
     type: 'activity',
     id: act.id,
     title: act.description,
-    description: `Project: ${act.project.name}`,
+    description: `Projeto: ${act.project.name}`,
     startTime: act.startTime,
     endTime: act.endTime,
     durationMinutes: act.durationMinutes,
+    source: act.source,
+    projectSlug: act.project.slug,
+    evidenceCount: act.evidences.length,
   }));
 
   let personalEvents: {

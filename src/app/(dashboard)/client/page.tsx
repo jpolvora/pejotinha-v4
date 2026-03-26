@@ -14,7 +14,12 @@ export default async function ClientAreaPage() {
   if (!user) redirect("/login");
 
   const projects = await prisma.project.findMany({
-    where: { clientProfileId: user.id },
+    where: {
+      OR: [
+        { clientProfileId: user.id },
+        { projectAccess: { some: { profileId: user.id } } }
+      ]
+    },
     include: { 
       freelancer: { select: { fullName: true, email: true } },
       activities: {

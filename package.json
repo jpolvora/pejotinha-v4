@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "stop": "npx supabase stop",
-    "setup": "npm install && node scripts/setup-env.mjs && npx prisma db push && node scripts/sync-auth.mjs && npx prisma db seed && npx supabase db query -f scripts/fix-permissions.sql",
-    "reset:db": "npx prisma db push --force-reset && node scripts/sync-auth.mjs && npx prisma db seed && npx supabase db query -f scripts/fix-permissions.sql",
+    "setup": "npm install && node scripts/setup-env.mjs && npx prisma db push && node scripts/sync-auth.mjs && npx prisma db seed && npx prisma db execute --file scripts/fix-permissions.sql --schema prisma/schema.prisma",
+    "reset:db": "npx prisma db push --force-reset && node scripts/sync-auth.mjs && npx prisma db seed && npx prisma db execute --file scripts/fix-permissions.sql --schema prisma/schema.prisma",
     "deploy": "sh deploy.sh",
     "prepare": "husky"
   },

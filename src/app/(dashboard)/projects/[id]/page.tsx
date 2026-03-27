@@ -1,5 +1,9 @@
 import { getProjectById } from "@/actions/projects";
+<<<<<<< HEAD
 import { getActivities, deleteActivity, approveActivity, updateActivity } from "@/actions/activities";
+=======
+import { getActivities, deleteActivity, approveActivity, generateProjectSummary } from "@/actions/activities";
+>>>>>>> main
 import { getProjectTasks, updateTaskStatus, deleteTask, type task_status } from "@/actions/tasks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -88,6 +92,7 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                   </Button>
                 </Link>
 
+<<<<<<< HEAD
                 <MagicNarrator activities={activities.map(a => ({
                   source: a.source,
                   description: a.description,
@@ -105,6 +110,16 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
               <CardContent>
                 <InviteClientForm projectId={project.id} />
                 <InvitationsList projectId={project.id} />
+=======
+                <form action={async () => {
+                  "use server";
+                  await generateProjectSummary(project.id);
+                }}>
+                  <Button variant="secondary" className="w-full flex justify-center text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 border-none shadow-lg">
+                    ✨ Generate AI Summary
+                  </Button>
+                </form>
+>>>>>>> main
               </CardContent>
             </Card>
 
@@ -200,6 +215,11 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                           <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {formatDateTime(act.startTime)} - {formatDateTime(act.endTime)}
+                          </div>
+                        )}
+                        {act.summary && (
+                          <div className="mt-4 p-3 bg-blue-50/50 border border-blue-100 rounded-lg text-sm text-blue-900 dark:bg-blue-900/10 dark:border-blue-800 dark:text-blue-300 italic ring-1 ring-blue-200 dark:ring-blue-700">
+                            <strong>AI Summary:</strong> {act.summary}
                           </div>
                         )}
                         {act.value !== undefined && Number(act.value) > 0 && (

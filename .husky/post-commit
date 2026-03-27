@@ -1,0 +1,48 @@
+#!/bin/sh
+
+# Husky Hook: post-commit
+# Sends commit data to Pejotinha API if branch naming matches client/<slug> or project/<slug>
+
+BRANCH=$(git branch --show-current)
+COMMIT_HASH=$(git rev-parse HEAD)
+COMMIT_MSG=$(git log -1 --pretty=%B)
+AUTHOR=$(git log -1 --pretty=%an)
+
+# 1. Check if branch follows naming convention
+# Regex check: client/<slug>/... OR project/<slug>/...
+if [[ ! $BRANCH =~ ^(client|project)\/([^\/]+)\/ ]]; then
+  # Silence if not following convention
+  exit 0
+fi
+
+# 2. Get API Configuration from git config
+# How to set: 
+# git config user.pj_api_key "pj_test_key_123"
+# git config user.pj_url "http://localhost:3000"
+API_KEY=$(git config user.pj_api_key)
+API_URL=$(git config user.pj_url || echo "http://localhost:3000")
+
+if [ -z "$API_KEY" ]; then
+  echo "⚠️ [Pejotinha] branch $BRANCH detectada, mas pj_api_key não configurada no git config."
+  echo "Execute: git config user.pj_api_key \"SUA_CHAVE_AQUI\""
+  exit 0
+fi
+
+# 3. Ship it!
+echo "🚀 [Pejotinha] Mapping work from branch: $BRANCH..."
+
+curl -s -X POST "$API_URL/api/webhooks/git" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"apiKey\": \"$API_KEY\",
+    \"branch\": \"$BRANCH\",
+    \"commitHash\": \"$COMMIT_HASH\",
+    \"message\": \"$COMMIT_MSG\",
+    \"author\": \"$AUTHOR\"
+  }" > /dev/null
+
+if [ $? -eq 0 ]; then
+  echo "✅ [Pejotinha] Commit mapped as Evidence!"
+else
+  echo "❌ [Pejotinha] Failed to send evidence to API."
+fi

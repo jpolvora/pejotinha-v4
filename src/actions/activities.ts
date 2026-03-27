@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { summarizeWorkEvents } from "./ai";
 
 export async function getActivities(projectId: string) {
   const supabase = await createClient();
@@ -300,6 +301,7 @@ export async function updateActivity(id: string, formData: FormData) {
   revalidatePath(`/projects/${projectId}`);
 }
 
+<<<<<<< HEAD
 export async function addEvidence(activityId: string, projectId: string, formData: FormData) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -387,4 +389,51 @@ export async function deleteEvidence(id: string, activityId: string, projectId: 
 
     await prisma.evidence.delete({ where: { id } });
     revalidatePath(`/projects/${projectId}`);
+=======
+export async function generateProjectSummary(projectId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 1. Gather all activities and evidences of today for this project
+  const activities = await prisma.activity.findMany({
+    where: {
+      projectId,
+      createdAt: { gte: today },
+      project: { freelancerId: user.id }
+    },
+    include: {
+      evidences: true
+    }
+  });
+
+  if (activities.length === 0) return { success: false, message: "No activities found for today." };
+
+  // 2. Prepare raw events list
+  const events: string[] = [];
+  activities.forEach(act => {
+    events.push(act.description);
+    act.evidences.forEach(ev => {
+      if (ev.content) events.push(ev.content);
+    });
+  });
+
+  // 3. Call AI summarized
+  const result = await summarizeWorkEvents(events);
+  if (!result.success) return result;
+
+  // 4. Update the "Daily Dev Log" activity with the summary
+  const dailyLog = activities.find(a => a.description.includes("[Auto] Daily Dev Log")) || activities[0];
+
+  await prisma.activity.update({
+    where: { id: dailyLog.id },
+    data: { summary: result.summary }
+  });
+
+  revalidatePath(`/projects/${projectId}`);
+  return { success: true, summary: result.summary };
+>>>>>>> main
 }

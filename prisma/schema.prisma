@@ -27,9 +27,14 @@ model Profile {
   personalEvents PersonalEvent[]
   clientProjects Project[]       @relation("ClientProjects")
   projects       Project[]       @relation("FreelancerProjects")
+<<<<<<< HEAD
   expenses       Expense[]
   invitations    Invitation[]
   projectAccess  ProjectAccess[]
+=======
+  expenses      Expense[]
+  apiKey        String?         @unique @map("api_key")
+>>>>>>> main
 
   @@map("profiles")
   @@schema("public")
@@ -39,6 +44,7 @@ model Customer {
   id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   freelancerId String    @map("freelancer_id") @db.Uuid
   name         String
+  slug         String?   @unique
   email        String?
   hourlyRate   Decimal?  @default(0.00) @map("hourly_rate") @db.Decimal
   createdAt    DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
@@ -89,11 +95,15 @@ model Activity {
   ticket          String?
   value           Decimal?   @default(0.00) @db.Decimal
   taskId          String?    @map("task_id") @db.Uuid
+<<<<<<< HEAD
   source          String          @default("manual")
   externalId      String?         @map("external_id")
   status          activity_status @default(pending)
   isPaid          Boolean         @default(false) @map("is_paid")
   paidAt          DateTime?       @map("paid_at") @db.Timestamptz(6)
+=======
+  summary         String?
+>>>>>>> main
   project         Project    @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   task            Task?      @relation(fields: [taskId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   approvals       Approval[]

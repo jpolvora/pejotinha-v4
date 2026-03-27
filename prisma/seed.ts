@@ -45,6 +45,7 @@ async function main() {
       email: 'freelancer@pejotinha.dev',
       fullName: 'João Silva',
       role: 'freelancer',
+      apiKey: 'pj_test_key_123',
     },
   })
   console.log(`✅ Test Freelancer: ${profile.fullName}`)
@@ -55,6 +56,7 @@ async function main() {
       data: {
         freelancerId: FREELANCER_ID,
         name: 'TechCorp Brasil',
+        slug: 'techcorp',
         email: 'contato@techcorp.com.br',
         hourlyRate: 150.00,
       },
@@ -63,6 +65,7 @@ async function main() {
       data: {
         freelancerId: FREELANCER_ID,
         name: 'StartupXYZ',
+        slug: 'startupxyz',
         email: 'hello@startupxyz.io',
         hourlyRate: 120.00,
       },
@@ -85,6 +88,7 @@ async function main() {
         freelancerId: FREELANCER_ID,
         customerId: customers[0].id,
         name: 'Dashboard Analytics',
+        slug: 'dashboard',
         description: 'Dashboard de analytics com gráficos interativos e relatórios em tempo real',
         status: 'active',
         hourly_rate: 150.00,
@@ -96,6 +100,7 @@ async function main() {
         freelancerId: FREELANCER_ID,
         customerId: customers[0].id,
         name: 'API de Pagamentos',
+        slug: 'payments-api',
         description: 'Integração com gateways de pagamento e sistema de cobranças recorrentes',
         status: 'active',
         hourly_rate: 160.00,

@@ -95,3 +95,53 @@ export async function extractActivityPayload(text: string, currentTimeIso: strin
   if (!result.success) return result;
   return { success: true, data: result.data };
 }
+
+export async function summarizeWorkEvents(events: string[]) {
+  const settings = await getSettings();
+  if (!settings?.aiConfig?.apiKey) {
+    throw new Error('Configuração de IA ausente.');
+  }
+
+  const { apiKey, baseUrl, model, provider } = settings.aiConfig!;
+  let aiModel;
+  
+  const isGoogleHost = baseUrl && baseUrl.includes('generativelanguage.googleapis.com');
+  const isNativeGoogle = provider === 'gemini' || (isGoogleHost && !baseUrl.includes('/openai'));
+
+  if (isNativeGoogle || isGoogleHost) {
+    const isLegacyModel = model && (model.includes('1.5') || model.includes('1.0'));
+    const google = createGoogleGenerativeAI({
+      apiKey,
+      baseURL: isGoogleHost && baseUrl.includes('/openai') 
+        ? baseUrl.split('/openai')[0] 
+        : (isGoogleHost && isLegacyModel && baseUrl.includes('/v1') ? baseUrl.replace('/v1', '/v1beta') : baseUrl),
+    });
+    aiModel = google(model || 'gemini-1.5-flash');
+  } else {
+    const aiProvider = createOpenAI({ apiKey, baseURL: baseUrl });
+    aiModel = aiProvider.chat(model || 'gpt-4o-mini');
+  }
+
+  try {
+    const { text: summary } = await generateText({
+      model: aiModel,
+      prompt: `Abaixo está uma lista de eventos brutos (mensagens de commit, logs de atividade, PRs) de um dia de trabalho de um desenvolvedor.
+      Combine-os em um parágrafo profissional e legível que descreva o progresso feito, adequado para ser enviado a um cliente.
+      
+      Regras:
+      - Seja profissional mas direto.
+      - Use a primeira pessoa do plural ou do singular (ex: "Trabalhei em..." ou "Finalizamos...").
+      - Máximo de 3-4 frases.
+      - Idioma: Português do Brasil.
+      
+      Eventos:
+      ${events.join('\n- ')}
+      `,
+    });
+
+    return { success: true, summary };
+  } catch (error: any) {
+    console.error('Erro ao resumir com IA:', error);
+    return { success: false, error: error.message };
+  }
+}

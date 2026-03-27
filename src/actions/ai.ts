@@ -8,7 +8,7 @@ import { getSettings } from './settings'
 
 export type AIIntent = 'LOG_ACTIVITY' | 'CREATE_TASK' | 'UNKNOWN';
 
-async function getAIModel() {
+async function getAIModel(preferredModel?: string) {
   const settings = await getSettings()
   
   if (!settings?.aiConfig?.apiKey) {
@@ -20,27 +20,27 @@ async function getAIModel() {
   let aiModel;
   
   // Decide which SDK to use based on provider and URL
-  if (provider === 'gemini' && !baseUrl.includes('/openai')) {
+  if (provider === 'gemini' && !baseUrl?.includes('/openai')) {
     // Native Google SDK
     const google = createGoogleGenerativeAI({
       apiKey,
       baseURL: baseUrl,
     })
-    aiModel = google(model)
+    aiModel = google(preferredModel || model || 'gemini-1.5-flash')
   } else if (provider === 'anthropic') {
     // Anthropic SDK
     const anthropic = createAnthropic({
       apiKey,
       baseURL: baseUrl || undefined,
     })
-    aiModel = anthropic(model)
+    aiModel = anthropic(preferredModel || model)
   } else {
     // OpenAI Compatible SDK (OpenAI, Groq, Mistral, DeepSeek, Google-OpenAI-Shim, etc.)
     const openai = createOpenAI({
       apiKey,
       baseURL: baseUrl,
     })
-    aiModel = openai.chat(model)
+    aiModel = openai.chat(preferredModel || model)
   }
 
   return aiModel
@@ -99,8 +99,34 @@ export async function extractActivityPayload(text: string, currentTimeIso: strin
   return { success: true, data: result.data };
 }
 
-<<<<<<< HEAD
-export async function generateNarrativeSummary(activities: { source: string, description: string, startTime?: Date | null }[]) {
+export async function summarizeWorkEvents(events: string[]) {
+  try {
+    const aiModel = await getAIModel('gemini-1.5-flash');
+
+    const { text: summary } = await generateText({
+      model: aiModel,
+      prompt: `Abaixo está uma lista de eventos brutos (mensagens de commit, logs de atividade, PRs) de um dia de trabalho de um desenvolvedor.
+      Combine-os em um parágrafo profissional e legível que descreva o progresso feito, adequado para ser enviado a um cliente.
+      
+      Regras:
+      - Seja profissional mas direto.
+      - Use a primeira pessoa do plural ou do singular (ex: "Trabalhei em..." ou "Finalizamos...").
+      - Máximo de 3-4 frases.
+      - Idioma: Português do Brasil.
+      
+      Eventos:
+      ${events.join('\n- ')}
+      `,
+    });
+
+    return { success: true, summary };
+  } catch (error: any) {
+    console.error('Erro ao resumir com IA:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function generateNarrativeSummary(activities: { source?: string, description: string, startTime?: Date | null }[]) {
   if (activities.length === 0) return { success: true, summary: '' }
 
   try {
@@ -130,54 +156,5 @@ Instruções:
   } catch (error: any) {
     console.error('Erro ao gerar narrativa:', error)
     return { success: false, error: error.message || 'Falha ao comunicar com a IA.' }
-=======
-export async function summarizeWorkEvents(events: string[]) {
-  const settings = await getSettings();
-  if (!settings?.aiConfig?.apiKey) {
-    throw new Error('Configuração de IA ausente.');
-  }
-
-  const { apiKey, baseUrl, model, provider } = settings.aiConfig!;
-  let aiModel;
-  
-  const isGoogleHost = baseUrl && baseUrl.includes('generativelanguage.googleapis.com');
-  const isNativeGoogle = provider === 'gemini' || (isGoogleHost && !baseUrl.includes('/openai'));
-
-  if (isNativeGoogle || isGoogleHost) {
-    const isLegacyModel = model && (model.includes('1.5') || model.includes('1.0'));
-    const google = createGoogleGenerativeAI({
-      apiKey,
-      baseURL: isGoogleHost && baseUrl.includes('/openai') 
-        ? baseUrl.split('/openai')[0] 
-        : (isGoogleHost && isLegacyModel && baseUrl.includes('/v1') ? baseUrl.replace('/v1', '/v1beta') : baseUrl),
-    });
-    aiModel = google(model || 'gemini-1.5-flash');
-  } else {
-    const aiProvider = createOpenAI({ apiKey, baseURL: baseUrl });
-    aiModel = aiProvider.chat(model || 'gpt-4o-mini');
-  }
-
-  try {
-    const { text: summary } = await generateText({
-      model: aiModel,
-      prompt: `Abaixo está uma lista de eventos brutos (mensagens de commit, logs de atividade, PRs) de um dia de trabalho de um desenvolvedor.
-      Combine-os em um parágrafo profissional e legível que descreva o progresso feito, adequado para ser enviado a um cliente.
-      
-      Regras:
-      - Seja profissional mas direto.
-      - Use a primeira pessoa do plural ou do singular (ex: "Trabalhei em..." ou "Finalizamos...").
-      - Máximo de 3-4 frases.
-      - Idioma: Português do Brasil.
-      
-      Eventos:
-      ${events.join('\n- ')}
-      `,
-    });
-
-    return { success: true, summary };
-  } catch (error: any) {
-    console.error('Erro ao resumir com IA:', error);
-    return { success: false, error: error.message };
->>>>>>> main
   }
 }

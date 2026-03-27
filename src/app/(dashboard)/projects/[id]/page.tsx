@@ -1,9 +1,5 @@
 import { getProjectById } from "@/actions/projects";
-<<<<<<< HEAD
-import { getActivities, deleteActivity, approveActivity, updateActivity } from "@/actions/activities";
-=======
-import { getActivities, deleteActivity, approveActivity, generateProjectSummary } from "@/actions/activities";
->>>>>>> main
+import { getActivities, deleteActivity, approveActivity, generateProjectSummary, updateActivity } from "@/actions/activities";
 import { getProjectTasks, updateTaskStatus, deleteTask, type task_status } from "@/actions/tasks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -63,11 +59,13 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
               <span className="text-[10px] uppercase tracking-widest font-black opacity-50 mb-1">Taxa/Hora</span>
               <span className="text-xl font-black text-primary">{project.hourly_rate ? formatCurrency(Number(project.hourly_rate)) : "R$ 0,00"}</span>
            </div>
-           <Link href={`/projects/${project.id}/log-activity`} className="h-full">
-              <Button className="h-full px-8 rounded-2xl font-black uppercase tracking-tighter group transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/20">
-                 Log Activity <Plus className="ml-2 w-5 h-5 group-hover:rotate-90 transition-transform" />
-              </Button>
-           </Link>
+           {isFreelancer && (
+             <Link href={`/projects/${project.id}/log-activity`} className="h-full">
+                <Button className="h-full px-8 rounded-2xl font-black uppercase tracking-tighter group transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/20">
+                   Log Activity <Plus className="ml-2 w-5 h-5 group-hover:rotate-90 transition-transform" />
+                </Button>
+             </Link>
+           )}
         </div>
       </div>
 
@@ -92,9 +90,17 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                   </Button>
                 </Link>
 
-<<<<<<< HEAD
+                <form action={async () => {
+                  "use server";
+                  await generateProjectSummary(project.id);
+                }}>
+                  <Button variant="secondary" className="w-full flex justify-center text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 border-none shadow-lg">
+                    ✨ Generate AI Summary
+                  </Button>
+                </form>
+
                 <MagicNarrator activities={activities.map(a => ({
-                  source: a.source,
+                  source: (a as any).source,
                   description: a.description,
                   startTime: a.startTime
                 }))} />
@@ -110,16 +116,6 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
               <CardContent>
                 <InviteClientForm projectId={project.id} />
                 <InvitationsList projectId={project.id} />
-=======
-                <form action={async () => {
-                  "use server";
-                  await generateProjectSummary(project.id);
-                }}>
-                  <Button variant="secondary" className="w-full flex justify-center text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 border-none shadow-lg">
-                    ✨ Generate AI Summary
-                  </Button>
-                </form>
->>>>>>> main
               </CardContent>
             </Card>
 
@@ -236,19 +232,24 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                                 formData.append("is_paid", "true");
                                 await updateActivity(act.id, formData);
                             }}>
+                               <input type="hidden" name="project_id" value={project.id} />
+                               <input type="hidden" name="description" value={act.description} />
+                               <input type="hidden" name="status" value={status} />
                               <Button variant="outline" size="sm" type="submit" className="h-8 text-[10px] font-black uppercase text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10">
                                 Mark as Paid
                               </Button>
                             </form>
                           )}
-                          <form action={async () => {
-                            "use server";
-                            await deleteActivity(act.id, project.id);
-                          }}>
-                            <Button variant="ghost" size="icon" type="submit" className="text-destructive h-8 w-8 hover:bg-destructive/10">
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                          </form>
+                          {isFreelancer && (
+                            <form action={async () => {
+                              "use server";
+                              await deleteActivity(act.id, project.id);
+                            }}>
+                              <Button variant="ghost" size="icon" type="submit" className="text-destructive h-8 w-8 hover:bg-destructive/10">
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </form>
+                          )}
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -271,7 +272,7 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                              {act.evidences.map((ev) => {
                                const isMedia = ev.fileUrl?.match(/\.(jpeg|jpg|gif|png|webp|mp4|webm)$/i);
                                const isVideo = ev.fileUrl?.match(/\.(mp4|webm)$/i);
-                               const isCommit = ev.evidenceType === 'commit' || ev.evidenceType === 'git_commit';
+                               const isCommit = ev.evidenceType === 'commit' || ev.evidenceType === 'git_commit' || ev.evidenceType === 'text' && ev.content?.includes('Commit');
                                
                                return (
                                 <div key={ev.id} className="relative group">
@@ -299,9 +300,9 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                                         href={ev.evidenceType === 'file' ? ev.fileUrl ?? undefined : (ev.evidenceType === 'link' ? ev.content ?? undefined : undefined)} 
                                         target="_blank" 
                                         rel="noopener noreferrer" 
-                                        className={`text-xs font-bold truncate ${ev.evidenceType === 'observation' ? 'cursor-default text-muted-foreground' : 'text-foreground hover:underline'}`}
+                                        className={`text-xs font-bold truncate ${ev.evidenceType === 'observation' || ev.evidenceType === 'text' && !ev.content?.startsWith('http') ? 'cursor-default text-muted-foreground' : 'text-foreground hover:underline'}`}
                                       >
-                                        {ev.evidenceType === 'file' ? 'Arquivo' : (isCommit ? `Commit: ${ev.content?.substring(0, 7)}` : ev.content)}
+                                        {ev.evidenceType === 'file' ? 'Arquivo' : (isCommit && ev.content?.includes('Commit') ? ev.content : (ev.content))}
                                       </a>
                                     </div>
                                   )}

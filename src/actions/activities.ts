@@ -301,7 +301,6 @@ export async function updateActivity(id: string, formData: FormData) {
   revalidatePath(`/projects/${projectId}`);
 }
 
-<<<<<<< HEAD
 export async function addEvidence(activityId: string, projectId: string, formData: FormData) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -389,7 +388,8 @@ export async function deleteEvidence(id: string, activityId: string, projectId: 
 
     await prisma.evidence.delete({ where: { id } });
     revalidatePath(`/projects/${projectId}`);
-=======
+}
+
 export async function generateProjectSummary(projectId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -435,5 +435,4 @@ export async function generateProjectSummary(projectId: string) {
 
   revalidatePath(`/projects/${projectId}`);
   return { success: true, summary: result.summary };
->>>>>>> main
 }

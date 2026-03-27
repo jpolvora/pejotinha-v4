@@ -22,15 +22,15 @@ export function InviteClientForm({ projectId }: { projectId: string }) {
     setLoading(true);
     try {
       const result = await createInvitation(projectId, email, role);
-      if (result.success) {
-        toast.success(result.message);
-        if (result.inviteUrl) {
-           console.log("Invite URL:", result.inviteUrl);
-           // You could show the URL in a modal here if needed
+      if (result && result.success) {
+        const data = result.data as any;
+        toast.success(data.message);
+        if (data.inviteUrl) {
+           console.log("Invite URL:", data.inviteUrl);
         }
         setEmail("");
       } else {
-        toast.error("Erro ao enviar convite");
+        toast.error(result?.error || "Erro ao enviar convite");
       }
     } catch (error: any) {
       toast.error(error.message || "Erro inesperado");

@@ -29,3 +29,9 @@ out
 
 # Testing
 coveragetmp/
+build_output*.txt
+debug_err.txt
+check_all_output*.txt
+full_tc*.txt
+debug_status.json
+.env.cloud

@@ -44,14 +44,14 @@ const dbUrl = status.DB_URL;
 
 if (apiUrl && anonKey) {
 
-  const envPath = '.env';
+  const envPath = process.argv[2] || '.env';
   let envContent = '';
 
   // Usar .env.example como base se o .env não existir
   if (existsSync(envPath)) {
     envContent = readFileSync(envPath, 'utf8');
   } else if (existsSync('.env.example')) {
-    console.log('📄 Criando .env baseado no .env.example...');
+    console.log(`📄 Criando ${envPath} baseado no .env.example...`);
     envContent = readFileSync('.env.example', 'utf8');
   }
 

@@ -1,7 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
+import { actionWrapper } from "@/lib/action-utils";
 
 interface DashboardStats {
   totalMinutes: number;
@@ -14,18 +14,11 @@ interface DashboardStats {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats | null> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  try {
+  const result = await actionWrapper(async (user) => {
     const profile = await prisma.profile.findUnique({ where: { id: user.id } });
     if (!profile) return null;
 
     const isFreelancer = profile.role === 'freelancer';
-    const projectFilter = isFreelancer
-      ? { freelancerId: user.id }
-      : { clientProfileId: user.id };
 
     const activeProjectsCount = await prisma.project.count({
       where: isFreelancer
@@ -95,111 +88,89 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
       evidencesUploaded: evidencesCount,
       weeklyChartData,
     };
-  } catch (error) {
-    console.error("Dashboard stats error:", error);
-    return null;
-  }
-}
-
-export async function getIntegratedTimeline() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const profile = await prisma.profile.findUnique({ where: { id: user.id } });
-  const isFreelancer = profile?.role === 'freelancer';
-
-  const activities = await prisma.activity.findMany({
-    where: isFreelancer
-      ? { project: { freelancerId: user.id } }
-      : { project: { clientProfileId: user.id } },
-    include: { 
-      project: { select: { name: true, slug: true, freelancerId: true } },
-      evidences: { select: { evidenceType: true } }
-    },
-    orderBy: { startTime: 'desc' },
-    take: 50,
   });
 
-  const timelineItems: {
-    type: string;
-    id: string;
-    title: string;
-    description: string | null;
-    startTime: Date | null;
-    endTime: Date | null;
-    durationMinutes?: number;
-    proofUrl?: string | null;
-    source?: string;
-    projectSlug?: string | null;
-    evidenceCount?: number;
-  }[] = activities.map(act => ({
-    type: 'activity',
-    id: act.id,
-    title: act.description,
-    description: `Projeto: ${act.project.name}`,
-    startTime: act.startTime,
-    endTime: act.endTime,
-    durationMinutes: act.durationMinutes,
-    source: act.source,
-    projectSlug: act.project.slug,
-    evidenceCount: act.evidences.length,
-  }));
+  return result.success ? result.data! : null;
+}
 
-  let personalEvents: {
-    id: string;
-    title: string;
-    description: string | null;
-    startTime: Date;
-    endTime: Date;
-    proofUrl: string | null;
-  }[] = [];
+export async function getIntegratedTimeline(): Promise<any[]> {
+  const result = await actionWrapper(async (user) => {
+    const profile = await prisma.profile.findUnique({ where: { id: user.id } });
+    const isFreelancer = profile?.role === 'freelancer';
 
-  if (isFreelancer) {
-    personalEvents = await prisma.personalEvent.findMany({
-      where: { freelancerId: user.id },
+    const activities = await prisma.activity.findMany({
+      where: isFreelancer
+        ? { project: { freelancerId: user.id } }
+        : { project: { clientProfileId: user.id } },
+      include: { 
+        project: { select: { name: true, slug: true, freelancerId: true } },
+        evidences: { select: { evidenceType: true } }
+      },
       orderBy: { startTime: 'desc' },
       take: 50,
     });
 
-    timelineItems.push(...personalEvents.map(pe => ({
-      type: 'personal',
-      id: pe.id,
-      title: pe.title,
-      description: pe.description,
-      startTime: pe.startTime,
-      endTime: pe.endTime,
-      proofUrl: pe.proofUrl,
-    })));
-  } else {
-    const projects = await prisma.project.findMany({
-      where: { clientProfileId: user.id },
-      select: { freelancerId: true },
-    });
-    const freelancerIds = [...new Set(projects.map(p => p.freelancerId))];
+    const timelineItems: any[] = activities.map(act => ({
+      type: 'activity',
+      id: act.id,
+      title: act.description,
+      description: `Projeto: ${act.project.name}`,
+      startTime: act.startTime,
+      endTime: act.endTime,
+      durationMinutes: act.durationMinutes,
+      source: act.source,
+      projectSlug: act.project.slug,
+      evidenceCount: act.evidences.length,
+    }));
 
-    if (freelancerIds.length > 0) {
-      const events = await prisma.personalEvent.findMany({
-        where: { freelancerId: { in: freelancerIds } },
+    if (isFreelancer) {
+      const personalEvents = await prisma.personalEvent.findMany({
+        where: { freelancerId: user.id },
         orderBy: { startTime: 'desc' },
         take: 50,
       });
 
-      timelineItems.push(...events.map(pe => ({
-        type: 'personal_anonymous',
+      timelineItems.push(...personalEvents.map(pe => ({
+        type: 'personal',
         id: pe.id,
-        title: "Busy Time / Pause",
-        description: "Freelancer is handling personal or private commitments.",
+        title: pe.title,
+        description: pe.description,
         startTime: pe.startTime,
         endTime: pe.endTime,
-        proofUrl: null,
+        proofUrl: pe.proofUrl,
       })));
-    }
-  }
+    } else {
+      const projects = await prisma.project.findMany({
+        where: { clientProfileId: user.id },
+        select: { freelancerId: true },
+      });
+      const freelancerIds = [...new Set(projects.map(p => p.freelancerId))];
 
-  return timelineItems.sort((a, b) => {
-    const timeA = new Date(a.startTime || 0).getTime();
-    const timeB = new Date(b.startTime || 0).getTime();
-    return timeB - timeA;
-  }).slice(0, 50);
+      if (freelancerIds.length > 0) {
+        const events = await prisma.personalEvent.findMany({
+          where: { freelancerId: { in: freelancerIds } },
+          orderBy: { startTime: 'desc' },
+          take: 50,
+        });
+
+        timelineItems.push(...events.map(pe => ({
+          type: 'personal_anonymous',
+          id: pe.id,
+          title: "Busy Time / Pause",
+          description: "Freelancer is handling personal or private commitments.",
+          startTime: pe.startTime,
+          endTime: pe.endTime,
+          proofUrl: null,
+        })));
+      }
+    }
+
+    return timelineItems.sort((a, b) => {
+      const timeA = new Date(a.startTime || 0).getTime();
+      const timeB = new Date(b.startTime || 0).getTime();
+      return timeB - timeA;
+    }).slice(0, 50);
+  });
+
+  return result.success ? result.data! : [];
 }

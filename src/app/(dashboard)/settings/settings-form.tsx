@@ -187,8 +187,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     setIsRotating(true)
     try {
       const result = await rotateWebhookSecret()
-      if (result.success) {
-        setFormData(prev => ({ ...prev, webhookSecret: result.secret! }))
+      if (result && result.success) {
+        setFormData(prev => ({ ...prev, webhookSecret: result.data as string }))
         toast({ title: 'Sucesso', description: 'Nova chave de integração gerada.' })
       }
     } catch (error) {

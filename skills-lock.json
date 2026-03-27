@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-tools": {
+      "source": "inferen-sh/skills",
+      "sourceType": "github",
+      "computedHash": "00f8ff84839ec5fea4c04c0c7a4d35a5106384469cb66e99a8e964a5b292460a"
+    },
+    "nextjs-supabase-auth": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "8bb779c17e0e13fb3bbd5ec622ecc1a6a7131f241a8f064953fca95f4f3d4bdf"
+    },
+    "nextjs-typescript-tailwindcss-supabase": {
+      "source": "mindrally/skills",
+      "sourceType": "github",
+      "computedHash": "8f4b8ac7ae5483ed7e75ed8b7e8dcc32b5049ef935edfbf7fa5a11022737048f"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "e3ba3d760c5f4cc43b02a91fb8924f726c7818f95cc35d79d0a606ca622b72f5"
+    }
+  }
+}

@@ -269,7 +269,7 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                         <div className="mt-4 flex flex-col gap-2">
                           <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Proof of Work Gallery</span>
                           <div className="flex flex-wrap gap-3">
-                             {act.evidences.map((ev) => {
+                             {act.evidences.map((ev: any) => {
                                const isMedia = ev.fileUrl?.match(/\.(jpeg|jpg|gif|png|webp|mp4|webm)$/i);
                                const isVideo = ev.fileUrl?.match(/\.(mp4|webm)$/i);
                                const isCommit = ev.evidenceType === 'commit' || ev.evidenceType === 'git_commit' || ev.evidenceType === 'text' && ev.content?.includes('Commit');

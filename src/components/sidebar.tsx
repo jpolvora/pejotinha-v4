@@ -42,7 +42,7 @@ export function Sidebar({ className, hasClientProjects, userRole }: SidebarProps
     { label: "Financeiro", icon: Receipt, href: "/expenses", active: pathname.includes("/expenses"), hide: userRole === 'client' },
     { label: "Relatórios", icon: PieChart, href: "/reports", active: pathname.includes("/reports") },
     { label: "Configurações", icon: Settings, href: "/settings", active: pathname === "/settings" },
-  ].filter(r => (r.show === undefined || r.show) && !r.hide)
+  ].filter(r => !(r as any).hide)
 
   const teams: { name: string; initial: string; href: string }[] = []
 

@@ -1,14 +1,12 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/login', '/auth/callback', '/api/webhooks']
-
-function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
-}
-
-export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+export async function updateSession(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,42 +17,55 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value }: { name: string; value: string }) =>
-            request.cookies.set(name, value),
-          )
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }: { name: string; value: string; options: CookieOptions }) =>
-            supabaseResponse.cookies.set(name, value, options),
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
           )
         },
       },
-    },
+    }
   )
 
-  // Refresh session — IMPORTANT: do not remove
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Refreshing the auth token
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
+  // Protection logic
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/auth')
+  const isDashboardPage = request.nextUrl.pathname.startsWith('/dashboard') || 
+                          request.nextUrl.pathname.startsWith('/projects') || 
+                          request.nextUrl.pathname.startsWith('/clients') ||
+                          request.nextUrl.pathname.startsWith('/expenses') ||
+                          request.nextUrl.pathname.startsWith('/settings')
 
-  // Redirect unauthenticated users to login
-  if (!user && !isPublicRoute(pathname)) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirectTo', pathname)
-    return NextResponse.redirect(loginUrl)
+  if (!user && isDashboardPage) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Redirect authenticated users away from login or root
-  if (user && (pathname === '/login' || pathname === '/')) {
+  if (user && isAuthPage && request.nextUrl.pathname !== '/auth/callback') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  return supabaseResponse
+  return response
+}
+
+export async function proxy(request: NextRequest) {
+  return await updateSession(request)
 }
 
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

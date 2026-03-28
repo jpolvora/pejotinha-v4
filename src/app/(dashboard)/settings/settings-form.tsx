@@ -33,7 +33,6 @@ const PROVIDERS = [
 
 const ENDPOINTS: Record<string, { label: string, value: string }[]> = {
   gemini: [
-    { label: 'Google Generative Language (Stable v1)', value: 'https://generativelanguage.googleapis.com/v1' },
     { label: 'Google Generative Language (Beta v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta' },
     { label: 'Google OpenAI Shim (v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta/openai/' },
   ],
@@ -47,11 +46,11 @@ const ENDPOINTS: Record<string, { label: string, value: string }[]> = {
 
 const MODELS: Record<string, { label: string, value: string }[]> = {
   gemini: [
-    { label: 'Gemini 2.0 Flash (Fastest)', value: 'gemini-2.0-flash' },
-    { label: 'Gemini 2.0 Flash-Lite', value: 'gemini-2.0-flash-lite' },
-    { label: 'Gemini 2.0 Pro Exp', value: 'gemini-2.0-pro-exp-02-05' },
-    { label: 'Gemini 1.5 Pro (Standard)', value: 'gemini-1.5-pro' },
-    { label: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
+    { label: 'Gemini 3.1 Pro (Flagship)', value: 'gemini-3.1-pro' },
+    { label: 'Gemini 3 Flash (Fast & Modern)', value: 'gemini-3-flash' },
+    { label: 'Gemini 3.1 Flash-Lite (Economical)', value: 'gemini-3.1-flash-lite' },
+    { label: 'Gemini 2.5 Pro (Standard)', value: 'gemini-2.5-pro' },
+    { label: 'Gemini 2.5 Flash', value: 'gemini-2.5-flash' },
   ],
   openai: [
     { label: 'GPT-4o (Latest)', value: 'gpt-4o' },
@@ -92,7 +91,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       provider: String(initialData?.aiConfig?.provider || 'gemini'),
       apiKey: String(initialData?.aiConfig?.apiKey || ''),
       baseUrl: String(initialData?.aiConfig?.baseUrl || 'https://generativelanguage.googleapis.com/v1beta'),
-      model: String(initialData?.aiConfig?.model || 'gemini-2.0-flash'),
+      model: String(initialData?.aiConfig?.model || 'gemini-3-flash'),
     },
     telegramConfig: {
       botToken: String(initialData?.telegramConfig?.botToken || ''),

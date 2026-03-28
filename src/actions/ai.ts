@@ -26,7 +26,7 @@ async function getAIModel(preferredModel?: string) {
       apiKey,
       baseURL: baseUrl,
     })
-    aiModel = google(preferredModel || model || 'gemini-1.5-flash')
+    aiModel = google(preferredModel || model || 'gemini-3-flash')
   } else if (provider === 'anthropic') {
     // Anthropic SDK
     const anthropic = createAnthropic({
@@ -101,7 +101,7 @@ export async function extractActivityPayload(text: string, currentTimeIso: strin
 
 export async function summarizeWorkEvents(events: string[]) {
   try {
-    const aiModel = await getAIModel('gemini-1.5-flash');
+    const aiModel = await getAIModel('gemini-3-flash');
 
     const { text: summary } = await generateText({
       model: aiModel,

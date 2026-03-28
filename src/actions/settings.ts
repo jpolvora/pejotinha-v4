@@ -63,7 +63,7 @@ export async function getSanitizedSettings() {
     aiConfig: settings.aiConfig ? {
       ...settings.aiConfig,
       apiKey: settings.aiConfig.apiKey ? mask(settings.aiConfig.apiKey) : ''
-    } : { provider: 'google', apiKey: '', baseUrl: '', model: 'gemini-1.5-pro' },
+    } : { provider: 'gemini', apiKey: '', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', model: 'gemini-3-flash' },
     telegramConfig: settings.telegramConfig ? {
       ...settings.telegramConfig,
       botToken: settings.telegramConfig.botToken ? mask(settings.telegramConfig.botToken) : ''

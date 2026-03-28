@@ -44,25 +44,28 @@ const updateEnv = (key, value) => {
 // Preencher credenciais do Supabase Cloud (URL é previsível)
 updateEnv('NEXT_PUBLIC_SUPABASE_URL', apiUrl);
 
-// Avisar sobre chaves que o CLI não provê para nuvem via "status"
-console.log('\n⚠️  Supabase CLI "status" fornece apenas credenciais LOCAIS.');
-console.log('🔗 URL Cloud configurada: ' + apiUrl);
-console.log('\n🔹 Por favor, verifique se seu arquivo .env.cloud contém as chaves ANON e SERVICE_ROLE corretas.');
-
 // DATABASE_URL para Supabase Cloud (formato padrão se não estiver definido)
 const dbUser = 'postgres';
-const dbPass = '[YOUR-PASSWORD]'; // Idealmente o usuário já preencheu ou vamos manter placeholder
+const dbPass = '[SUA-SENHA-DO-BANCO]'; 
 const dbHost = `db.${projectRef}.supabase.co`;
 const dbPort = '5432';
 const dbName = 'postgres';
 
 const remoteDbUrl = `postgresql://${dbUser}:${dbPass}@${dbHost}:${dbPort}/${dbName}`;
 
-// Apenas sugere se não existir ou se for o local
-if (!envContent.includes(dbHost)) {
-    console.log(`\n💡 Dica: Sua DATABASE_URL remota deve ser algo como:`);
-    console.log(`   ${remoteDbUrl}`);
-}
+// Atualizar variáveis de banco para nuvem
+updateEnv('DATABASE_URL', remoteDbUrl);
+updateEnv('DIRECT_URL', remoteDbUrl);
+updateEnv('POSTGRES_USER', dbUser);
+updateEnv('POSTGRES_PASSWORD', dbPass);
+updateEnv('POSTGRES_HOST', dbHost);
+updateEnv('POSTGRES_PORT', dbPort);
+updateEnv('POSTGRES_DB', dbName);
+
+// Avisar sobre chaves que o CLI não provê para nuvem via "status"
+console.log('\n⚠️  Supabase CLI "status" fornece apenas credenciais LOCAIS.');
+console.log('🔗 URL Cloud configurada: ' + apiUrl);
+console.log('\n🔹 Por favor, verifique se seu arquivo .env.cloud contém as chaves ANON e SERVICE_ROLE corretas.');
 
 // Adicionar ENCRYPTION_SECRET se estiver vazio ou placeholder
 const hasEncryptionSecret = envContent.match(/^ENCRYPTION_SECRET=(?!("|')?(your_32_byte_secret_here_|your_32_chars_long_encryption_secret).*("|')?).+/m);

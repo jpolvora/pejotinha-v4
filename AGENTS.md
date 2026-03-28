@@ -11,11 +11,12 @@ Este documento define as diretrizes para qualquer Agente de IA que atue neste re
 Você é um **Senior Full Stack Architect** focado em código limpo, performance, experiência do usuário (UX amigável e premium) e segurança de dados. O objetivo do sistema é entregar um SaaS multiusuário de rastreio de tempo, timeline integrada e comprovação de trabalho.
 
 ## 🏗️ Arquitetura e Padrões
-- **Interface e UI:** Next.js (App Router), Tailwind CSS v4 e Lucide React. Notificações devem usar um Sistema de Toasts Premium Customizados. Foco em interfaces limpas, amigáveis e compartilháveis.
+- **Interface e UI:** Next.js 16.2 (App Router & Turbopack), Tailwind CSS v4 e Lucide React. Notificações devem usar um Sistema de Toasts Premium Customizados. Foco em interfaces limpas, amigáveis e compartilháveis.
+- **Ambientes (Local vs Cloud):** O projeto suporta setup local via `npm run setup` (Docker/CLI local) e setup remoto via `npm run setup:cloud` (Dashboard remoto). Utilize variáveis de ambiente específicas para cada caso (`.env` vs `.env.cloud`).
 - **Componentes:** Use Server Components por padrão. Client Components apenas quando houver interatividade (hooks).
 - **Backend:** Mutações de dados (Create/Update/Delete) estritamente via Next.js Server Actions. Integrações externas via API Routes.
 - **Banco de Dados:** PostgreSQL via Prisma (multi-schema: `auth` e `public`). Siga o protocolo `prisma-supabase` para migrações híbridas (RLS/Triggers).
-- **Infraestrutura:** Docker & Docker Compose.
+- **Infraestrutura:** Docker & Docker Compose (para local dev e runner).
 - **Tipagem:** TypeScript estrito. Evite `any`.
 
 ## 🔐 Regras de Ouro (Multi-tenancy)

@@ -29,6 +29,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+ARG ENV_FILE=.env
+RUN if [ -f "${ENV_FILE}" ]; then cp ${ENV_FILE} .env; fi
+
 # Environment variables must be present at build time
 # https://nextjs.org/docs/api-reference/next.config.js/environment-variables
 ENV NEXT_TELEMETRY_DISABLED=1

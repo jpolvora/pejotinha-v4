@@ -11,10 +11,22 @@ TAG="latest"
 
 IMAGE_PATH="$REGISTRY/$USERNAME/$IMAGE_NAME:$TAG"
 
-echo "🏗️  Iniciando build de produção: $IMAGE_PATH..."
+# 0. Detectar ambiente salvo
+PJ_ENV="local"
+if [ -f ".env.local" ]; then
+    PJ_ENV=$(grep "^PJ_ENV=" .env.local | cut -d '=' -f2)
+fi
+
+ENV_FILE=".env"
+if [ "$PJ_ENV" == "cloud" ]; then
+    ENV_FILE=".env.cloud"
+fi
+
+echo "🚀 [Context: ${PJ_ENV^^}] Usando $ENV_FILE para o build..."
 
 # 1. Build da imagem usando o estágio 'runner' (produção standalone)
-docker build --target runner -t $IMAGE_PATH .
+# Passamos as variáveis do arquivo selecionado para o build se necessário
+docker build --target runner --build-arg ENV_FILE=$ENV_FILE -t $IMAGE_PATH .
 
 if [ $? -eq 0 ]; then
     echo "✅ Build concluído com sucesso!"

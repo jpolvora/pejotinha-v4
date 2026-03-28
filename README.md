@@ -17,7 +17,7 @@ Pejotinha é uma plataforma SaaS multiusuário voltada para freelancers que dese
 ---
 
 ## 🛠️ Tecnologias
-- **Frontend**: Next.js 15 (App Router), Tailwind CSS v4, Lucide React, Shadcn/UI.
+- **Frontend**: Next.js 16.2 (App Router & Turbopack), Tailwind CSS v4, Lucide React, Shadcn/UI.
 - **Backend / BaaS**: Supabase (Self-hosted ou Cloud) - Auth, Storage, Edge Functions.
 - **ORM**: Prisma (PostgreSQL).
 - **IA**: Vercel AI SDK (Google Gemini / OpenAI).
@@ -30,59 +30,102 @@ Este projeto foi desenhado para ser totalmente independente. Diferente de outros
 
 ---
 
-## 🚀 Como Começar (Setup Rápido)
+## 🚀 Configuração do Ambiente
 
-### 📋 Pré-requisitos
-Para rodar este projeto localmente, você precisará de:
+O Pejotinha v4 suporta dois modelos de infraestrutura, dependendo da sua necessidade:
 
-- **Git**: Para clonar o repositório.
-- **Terminal**: Utilizar Bash ou CMD (Git Bash é altamente recomendado no Windows).
-- **Docker / Docker Desktop**: Para rodar o container do Supabase e o banco de dados.
-- **Node.js**: Versão 20 ou superior.
-- **NPM**: Gerenciador de pacotes (instalado com o Node).
+| Modelo | Descrição | Comando de Setup |
+| --- | --- | --- |
+| **A. Self-Hosted (Local)** | Supabase roda em Docker no seu PC. | `npm run setup` |
+| **B. Cloud-Hosted (Nuvem)** | Usa sua conta no Supabase.com. | `npm run setup:cloud` |
 
 ---
 
-### 🛠️ Passo a Passo
+### 📋 Pré-requisitos
+Independente do modelo, você precisará de:
+- **Node.js 20+** e **NPM 10+**.
+- **Docker Desktop** (Apenas para o modo **Self-Hosted**).
+- **Git** para clonar o projeto.
 
-1. **Clone o repositório**:
-   ```bash
-   git clone https://github.com/jpolvora/pejotinha-v4.git
-   cd pejotinha-v4
-   ```
+---
 
-2. **Execute o Setup Automatizado**:
+### 📦 Opção A: Self-Hosted (Local com Docker)
+Ideal para desenvolvimento offline.
+
+1. **Setup Inicial**:
    ```bash
    npm run setup
    ```
-   *Este comando configura o .env, sobe o Supabase local, sincroniza o banco e as permissões de acesso.*
+   *Escolha a opção **1** quando solicitado.*
 
-3. **Inicie o Ambiente de Desenvolvimento**:
+2. **Iniciar App**:
    ```bash
    npm run dev
    ```
 
-4. **Verificação de Sanidade (Opcional)**:
-   *Garante que Lint, Tipos e Conexão com o Banco/Supabase estão OK.*
+---
+
+### ☁️ Opção B: Cloud-Hosted (Supabase.com)
+Ideal para colaboração e paridade com produção.
+
+1. **Setup Inicial**:
    ```bash
-   npm run check:all
+   npm run setup
+   ```
+   *Escolha a opção **2** quando solicitado.*
+
+2. **Configurar Credenciais**:
+   Edite o arquivo `.env.cloud` com seus dados reais do Dashboard.
+
+3. **Publicar e Iniciar**:
+   ```bash
+   npm run db:push
+   npm run dev
    ```
 
 ---
 
-## 🔄 Workflow de Migrações (Hybrid Approach)
+### 🩺 Verificação de Sanidade (Opcional)
+```bash
+npm run check:all
+```
+*Garante que Lint, Tipos e Saneamento do código estão OK.*
 
-O Pejotinha utiliza um workflow híbrido entre **Prisma** e **Supabase SQL** para garantir que recursos nativos (RLS, Triggers) sejam mantidos.
+---
+
+## 🏗️ Workflow de Desenvolvimento
+
+Dependendo da sua escolha no setup, o seu workflow será ligeiramente diferente:
+
+### 📦 Caminho A: Self-Hosted (Local Dev)
+Ideal para iterações rápidas e total independência de internet/custos de nuvem.
 
 1. **Alterar Schema**: Modifique `prisma/schema.prisma`.
-2. **Sincronizar**: 
-   - Desenvolvimento: `npx prisma db push`
-   - Produção: `npx prisma migrate dev`
-3. **Aplicar Supabase Rules**: Sempre após uma sincronização que altere tabelas, execute:
+2. **Sincronizar DB**: 
+   ```bash
+   npx prisma db push
+   ```
+3. **Sincronizar Supabase**: Sempre que alterar tabelas, execute o helper para manter RLS e Triggers:
    ```bash
    npm run db:setup-supabase
    ```
-   *Isso re-aplica as políticas de RLS e Triggers definidos em `scripts/setup-supabase.sql`.*
+4. **Ver no Studio Local**: [http://localhost:54323](http://localhost:54323)
+
+---
+
+### ☁️ Caminho B: Cloud-Hosted (Remote Dev)
+Ideal para paridade com produção e colaboração em time.
+
+1. **Alterar Schema**: Modifique `prisma/schema.prisma`.
+2. **Push Remoto**: 
+   ```bash
+   npm run db:push:cloud
+   ```
+3. **Configuração Supabase**: O RLS e Triggers remotos são geridos via Painel do Supabase ou migrações SQL no SQL Editor do Dashboard.
+4. **Variáveis Cloud**: O app deve ser iniciado com:
+   ```bash
+   npm run dev:cloud
+   ```
 
 ---
 
@@ -130,14 +173,25 @@ Após o setup, o banco de dados virá populado com os seguintes dados de teste:
 
 ---
 
-## 📦 Deploy em Produção
-Para faturar a imagem otimizada para o seu servidor:
+---
 
-1. **Execute o Deploy**:
+## 🚀 Publicação e Deploy
+
+O Pejotinha é inteligente e sabe para onde deve ir:
+
+1. **Deploy Local (Self-Hosted)**:
+   Se você escolheu a Opção A no setup, o comando:
    ```bash
    npm run deploy
    ```
-   *Isso irá construir o container em modo standalone e subir para o GHCR.*
+   Irá buildar uma imagem Docker otimizada e subir para o seu registry (padrão GHCR).
+
+2. **Deploy Cloud (Supabase)**:
+   Se você escolheu a Opção B no setup, o comando:
+   ```bash
+   npm run deploy
+   ```
+   Irá sincronizar o seu banco de dados e as Edge Functions locais com o seu projeto no Supabase Dashboard.
 
 ---
 

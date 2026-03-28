@@ -3,19 +3,27 @@
 # Pejotinha-v4 - Production Deployment Script
 # Este script builda a imagem otimizada e sobe para um registry (padrão GHCR)
 
-# Configurações (Altere conforme sua conta)
+# Configurações (Precedência: .env.local > Hardcoded)
 REGISTRY="ghcr.io"
-USERNAME="jpolvora" # Coloque seu usuário do GitHub
+USERNAME="jpolvora"
 IMAGE_NAME="pejotinha-v4"
 TAG="latest"
 
-IMAGE_PATH="$REGISTRY/$USERNAME/$IMAGE_NAME:$TAG"
-
-# 0. Detectar ambiente salvo
+# 0. Detectar ambiente e variáveis Coolify
 PJ_ENV="local"
 if [ -f ".env.local" ]; then
     PJ_ENV=$(grep "^PJ_ENV=" .env.local | cut -d '=' -f2)
+    # Tentar extrair registry e username do .env.local se existirem
+    ENV_REGISTRY=$(grep "^PJ_DOCKER_REGISTRY=" .env.local | cut -d '=' -f2)
+    ENV_USERNAME=$(grep "^PJ_DOCKER_USERNAME=" .env.local | cut -d '=' -f2)
+    ENV_IMAGE_NAME=$(grep "^PJ_COOLIFY_APP_NAME=" .env.local | cut -d '=' -f2)
+    
+    [ ! -z "$ENV_REGISTRY" ] && REGISTRY=$ENV_REGISTRY
+    [ ! -z "$ENV_USERNAME" ] && USERNAME=$ENV_USERNAME
+    [ ! -z "$ENV_IMAGE_NAME" ] && IMAGE_NAME=$ENV_IMAGE_NAME
 fi
+
+IMAGE_PATH="$REGISTRY/$USERNAME/$IMAGE_NAME:$TAG"
 
 ENV_FILE=".env"
 if [ "$PJ_ENV" == "cloud" ]; then
@@ -23,9 +31,9 @@ if [ "$PJ_ENV" == "cloud" ]; then
 fi
 
 echo "🚀 [Context: ${PJ_ENV^^}] Usando $ENV_FILE para o build..."
+echo "📦 Buildando: $IMAGE_PATH"
 
 # 1. Build da imagem usando o estágio 'runner' (produção standalone)
-# Passamos as variáveis do arquivo selecionado para o build se necessário
 docker build --target runner --build-arg ENV_FILE=$ENV_FILE -t $IMAGE_PATH .
 
 if [ $? -eq 0 ]; then
@@ -35,10 +43,8 @@ else
     exit 1
 fi
 
-# 2. Login no Registry (Caso ainda não esteja logado)
-# Para o GHCR no GitHub, você precisará de um PAT (Personal Access Token)
+# 2. Login no Registry (Se necessário)
 echo "🔑 Tentando login no $REGISTRY..."
-echo "(Se falhar, rode: echo OPAT | docker login ghcr.io -u SEU_USUARIO --password-stdin)"
 # docker login $REGISTRY
 
 # 3. Push para o Registry
@@ -47,8 +53,13 @@ docker push $IMAGE_PATH
 
 if [ $? -eq 0 ]; then
     echo "🎉 Imagem disponível em: $IMAGE_PATH"
-    echo "Agora você pode usar esta imagem no Portainer (Arcane) ou Coolify/Umbrel!"
 else
-    echo "❌ Erro ao subir a imagem. Verifique suas credenciais."
+    echo "❌ Erro ao subir a imagem."
     exit 1
+fi
+
+# 4. Trigger Coolify API (Novo!)
+if [ -f "scripts/coolify-trigger.mjs" ]; then
+    echo "🔔 Avisando o Coolify sobre a nova versão..."
+    node scripts/coolify-trigger.mjs
 fi

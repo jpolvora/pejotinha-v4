@@ -85,6 +85,18 @@ Ideal para colaboração e paridade com produção.
 
 ---
 
+### 🔑 Acesso Padrão (Seed)
+Após o setup, para o primeiro acesso, utilize estas credenciais:
+
+| Perfil | Email | Senha |
+| :--- | :--- | :--- |
+| **Admin** | `admin@email.com` | `P@ssword!` |
+| **Freelancer** | `freelancer@pejotinha.dev` | `P@ssword!` |
+
+---
+
+---
+
 ### 🩺 Verificação de Sanidade (Opcional)
 ```bash
 npm run check:all

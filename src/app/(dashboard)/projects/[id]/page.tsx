@@ -1,6 +1,7 @@
 import { getProjectById } from "@/actions/projects";
 import { getActivities, deleteActivity, approveActivity, generateProjectSummary, updateActivity } from "@/actions/activities";
-import { getProjectTasks, updateTaskStatus, deleteTask, type task_status } from "@/actions/tasks";
+import { getProjectTasks, updateTaskStatus, deleteTask } from "@/actions/tasks";
+import { type task_status } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

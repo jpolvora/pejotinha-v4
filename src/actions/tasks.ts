@@ -4,7 +4,6 @@ import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { actionWrapper, ActionResponse } from "@/lib/action-utils"
 import { task_status, task_priority } from "@prisma/client"
-export { task_status, task_priority }
 
 export async function createBatchTasks(projectId: string, tasks: { name: string, description?: string, dueDate?: string, priority?: task_priority, tags?: string[] }[]): Promise<ActionResponse> {
   return await actionWrapper(async (user) => {

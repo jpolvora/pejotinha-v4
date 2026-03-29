@@ -81,8 +81,9 @@ export async function createActivity(formData: FormData): Promise<any> {
         startTime,
         endTime,
         isPaid,
-        paidAt
-      }
+        paidAt,
+        isPrivate: formData.get("is_private") === "true"
+      } as any
     });
 
     // Handle Evidences Loop
@@ -267,14 +268,17 @@ export async function updateActivity(id: string, formData: FormData): Promise<an
 
     const paidAt = isPaid && !activity.isPaid ? new Date() : (isPaid ? activity.paidAt : null);
 
+    const isPrivate = formData.get("is_private") === "true";
+
     await prisma.activity.update({
       where: { id },
       data: { 
         description, 
         status, 
         isPaid, 
-        paidAt 
-      }
+        paidAt,
+        isPrivate
+      } as any
     });
 
     revalidatePath(`/projects/${projectId}`);

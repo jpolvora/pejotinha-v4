@@ -14,7 +14,7 @@ import { EvidenceManager } from "@/components/evidence-manager";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDateTime, formatDuration } from "@/lib/locale";
 import { MagicNarrator } from "@/components/magic-narrator";
-import { InviteClientForm } from "@/components/invite-client-form";
+import { InviteClientModal } from "@/components/clients/invite-client-modal";
 import { InvitationsList } from "@/components/invitations-list";
 
 export default async function ProjectDetailsPage(props: { params: Promise<{ id: string }> }) {
@@ -108,14 +108,18 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
             </Card>
 
             {/* Invitation Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Invite Client</CardTitle>
-                <CardDescription>Give your client access to the Project Area.</CardDescription>
+            <Card className="border-primary/10 bg-primary/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" /> Compartilhar Projeto
+                </CardTitle>
+                <CardDescription className="text-xs">Dê acesso ao seu cliente para visualizar a timeline.</CardDescription>
               </CardHeader>
-              <CardContent>
-                <InviteClientForm projectId={project.id} />
-                <InvitationsList projectId={project.id} />
+              <CardContent className="space-y-4">
+                <InviteClientModal projectId={project.id} projectName={project.name} />
+                <div className="pt-2 border-t border-dashed border-primary/20">
+                   <InvitationsList projectId={project.id} />
+                </div>
               </CardContent>
             </Card>
 

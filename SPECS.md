@@ -61,7 +61,10 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 - [x] **Timeline Visual:** Componente unificado de atividades e eventos pessoais no Dashboard.
 - [x] **Sistema de Toasts Premium:** Padronizar feedbacks visuais com Toasts customizados.
 
-### 2. Expansão de Features
+- [ ] **Taskboard (Agile):** Quadro Kanban dinâmico com colunas customizáveis (Todo, Doing, Done).
+    - **Drag & Drop:** Movimentação fluida de cards entre estados.
+    - **Vínculo de Atividades:** Possibilidade de associar logs de tempo (`Activity`) diretamente a uma tarefa (`Task`).
+    - **Cards Pro:** Visualização de progresso, tags e prioridades diretamente no card.
 - [ ] **Proofs UI Pro:** Galeria de evidências melhorada, com preview de imagens e links diretos para commits/documentos.
 - [ ] **Exportação PDF/Excel Avançada:** Para relatórios fiscais e faturas brutas.
 - [ ] **Client Invites & Portal UI:** Sistema de convites por e-mail e aceitação via token (UI Proativa).

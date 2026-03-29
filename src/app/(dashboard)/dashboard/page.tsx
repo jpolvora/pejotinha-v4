@@ -4,6 +4,9 @@ import { getDashboardStats, getIntegratedTimeline } from "@/actions/dashboard"
 import { formatDateTime, formatDuration } from "@/lib/locale"
 import { Badge } from "@/components/ui/badge"
 
+import Link from "next/link"
+import { OnboardingBanner } from "@/components/dashboard/onboarding-banner"
+
 export default async function DashboardPage() {
   const stats = await getDashboardStats();
   const timeline = await getIntegratedTimeline();
@@ -18,6 +21,8 @@ export default async function DashboardPage() {
     weeklyChartData: [],
   };
 
+  const showOnboarding = safeStats.activeClients === 0;
+
   return (
     <div className="space-y-8 animate-in fade-in zoom-in duration-500">
       <div>
@@ -25,27 +30,33 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground mt-1 text-sm font-medium">Bem-vindo de volta! Aqui está seu resumo de produtividade e histórico.</p>
       </div>
 
+      {showOnboarding && <OnboardingBanner />}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[
-          { title: "Total de Horas", icon: Timer, value: formatDuration(safeStats.totalMinutes), color: "text-blue-500" },
-          { title: "Projetos Ativos", icon: Briefcase, value: safeStats.activeProjects.toString(), color: "text-emerald-500" },
-          { title: "Clientes Ativos", icon: Users, value: safeStats.activeClients.toString(), color: "text-violet-500" },
-          { title: "Evidências", icon: FileText, value: safeStats.evidencesUploaded.toString(), color: "text-amber-500" },
+          { title: "Total de Horas", icon: Timer, value: formatDuration(safeStats.totalMinutes), color: "text-blue-500", href: "/timeline" },
+          { title: "Projetos Ativos", icon: Briefcase, value: safeStats.activeProjects.toString(), color: "text-emerald-500", href: "/projects" },
+          { title: "Clientes Ativos", icon: Users, value: safeStats.activeClients.toString(), color: "text-violet-500", href: "/clients" },
+          { title: "Evidências", icon: FileText, value: safeStats.evidencesUploaded.toString(), color: "text-amber-500", href: "/timeline" },
         ].map((stat, i) => (
-          <div key={i} className="rounded-2xl border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm hover:shadow-lg transition-all hover:bg-accent/10 cursor-default relative overflow-hidden group border-muted/50">
+          <Link 
+            key={i} 
+            href={stat.href}
+            className="rounded-2xl border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm hover:shadow-lg transition-all hover:bg-accent/10 cursor-pointer relative overflow-hidden group border-muted/50 block"
+          >
             <div className={`absolute -top-6 -right-6 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-500 ${stat.color}`}>
                <stat.icon className="h-24 w-24" />
             </div>
-            <div className="p-6 pb-2 flex flex-row items-center justify-between space-y-0">
+            <div className="p-6 pb-2 flex flex-row items-center justify-between space-y-0 text-left">
                <div className={`p-2 rounded-lg bg-muted/50 ${stat.color}`}>
                 <stat.icon className="h-4 w-4" />
               </div>
               <h3 className="tracking-tight text-xs font-bold uppercase opacity-60">{stat.title}</h3>
             </div>
             <div className="p-6 pt-0 mt-1">
-              <div className="text-3xl font-black tracking-tighter">{stat.value}</div>
+              <div className="text-3xl font-black tracking-tighter text-left">{stat.value}</div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

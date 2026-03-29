@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+'use server'
 
 export type ActionResponse<T = any> = {
   success: boolean
@@ -38,6 +38,8 @@ export async function actionWrapper<T>(
   action: (user: any, formData?: FormData) => Promise<T>
 ): Promise<ActionResponse<T> | any> {
   try {
+    // Dynamic import to prevent client-side bundling of server-only modules
+    const { createClient } = await import("@/lib/supabase/server")
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 

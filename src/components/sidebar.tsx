@@ -34,6 +34,8 @@ export function Sidebar({ className, hasClientProjects, userRole }: SidebarProps
 
   const routes = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard", active: pathname === "/dashboard" },
+    { label: "Timeline", icon: FileText, href: "/timeline", active: pathname.includes("/timeline") },
+    { label: "Taskboard", icon: FolderKanban, href: "/taskboard", active: pathname.includes("/taskboard") },
     { label: "Clientes", icon: Users, href: "/clients", active: pathname.includes("/clients"), hide: userRole === 'client' },
     { label: "Projetos", icon: FolderKanban, href: "/projects", active: pathname.includes("/projects") },
     { label: "Área do Cliente", icon: Users, href: "/client", active: pathname === "/client" },

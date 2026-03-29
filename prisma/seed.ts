@@ -31,6 +31,15 @@ async function main() {
 
   console.log('🌱 Seeding database...')
 
+  // 0. Update System Settings
+  const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED || 'false'
+  await prisma.systemSetting.upsert({
+    where: { key: 'google_login_enabled' },
+    update: { value: googleEnabled },
+    create: { key: 'google_login_enabled', value: googleEnabled },
+  })
+  console.log(`✅ System Settings: google_login_enabled = ${googleEnabled}`)
+
   // 1. Create Admin Profile
   const adminProfile = await prisma.profile.upsert({
     where: { id: ADMIN_ID },

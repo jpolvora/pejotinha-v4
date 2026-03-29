@@ -10,12 +10,15 @@ export async function getReportsData(): Promise<any> {
       include: { activities: true, customer: true }
     });
 
-    const timePerProject = projects.map(p => ({
-      name: p.name,
-      customer: p.customer.name,
-      totalMinutes: p.activities.reduce((acc, a) => acc + a.durationMinutes, 0),
-      amount: (p.activities.reduce((acc, a) => acc + a.durationMinutes, 0) / 60) * Number(p.hourly_rate)
-    }));
+    const timePerProject = projects.map(p => {
+      const totalMinutes = p.activities?.reduce((acc, a) => acc + (a.durationMinutes || 0), 0) || 0;
+      return {
+        name: p.name,
+        customer: p.customer?.name || "Sem Cliente",
+        totalMinutes,
+        amount: (totalMinutes / 60) * Number(p.hourly_rate || 0)
+      };
+    });
 
     const timePerProjectChart = timePerProject.map(p => ({
       name: p.name,

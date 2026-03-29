@@ -29,7 +29,7 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
 
   const userAccess = (project as any).projectAccess?.[0];
   const isFreelancer = project.freelancerId === user?.id;
-  const isClientOwner = project.clientProfileId === user?.id || userAccess?.role === 'owner';
+  const isClientOwner = project.clientProfileId === user?.id || userAccess?.role === 'owner' || project.customers?.email === user?.email;
   const isSupervisor = userAccess?.role === 'supervisor';
   
   // Anyone with access can view, but only freelancer/owner can approve/reject

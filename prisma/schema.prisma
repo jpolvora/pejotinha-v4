@@ -34,6 +34,17 @@ model Profile {
   @@schema("public")
 }
 
+model SystemSetting {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(dbgenerated("timezone('utc'::text, now())")) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("system_settings")
+  @@schema("public")
+}
+
 model Customer {
   id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   freelancerId String    @map("freelancer_id") @db.Uuid

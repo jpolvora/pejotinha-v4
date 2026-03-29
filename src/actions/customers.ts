@@ -65,6 +65,17 @@ export async function updateCustomer(id: string, formData: FormData): Promise<an
       data: { name, email, hourlyRate }
     });
 
+    // Sync all projects of this customer with the profile if email exists
+    if (email) {
+      const profile = await prisma.profile.findUnique({ where: { email } });
+      if (profile) {
+        await prisma.project.updateMany({
+          where: { customerId: id },
+          data: { clientProfileId: profile.id }
+        });
+      }
+    }
+
     revalidatePath("/clients");
     return customer;
   });

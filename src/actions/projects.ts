@@ -38,7 +38,7 @@ export async function getProjectById(id: string): Promise<any | null> {
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
-        customer: { select: { name: true } },
+        customer: { select: { name: true, email: true } },
         activities: { select: { durationMinutes: true } },
         clientProfile: { select: { fullName: true, email: true } },
         projectAccess: {
@@ -50,7 +50,8 @@ export async function getProjectById(id: string): Promise<any | null> {
     const hasAccess = project && (
       project.freelancerId === user.id || 
       project.clientProfileId === user.id || 
-      project.projectAccess.length > 0
+      project.projectAccess.length > 0 ||
+      project.customer.email === user.email
     );
 
     if (!project || !hasAccess) {
@@ -81,7 +82,7 @@ export async function createProject(formData: FormData): Promise<any> {
 
     const customer = await prisma.customer.findUnique({ 
       where: { id: customerId },
-      select: { id: true, freelancerId: true, hourlyRate: true }
+      select: { id: true, freelancerId: true, hourlyRate: true, email: true }
     });
     if (!customer || customer.freelancerId !== user.id) throw new Error("Unauthorized customer access");
 
@@ -98,10 +99,17 @@ export async function createProject(formData: FormData): Promise<any> {
       }
     }
 
+    let clientProfileId = null;
+    if (customer.email) {
+      const profile = await prisma.profile.findUnique({ where: { email: customer.email } });
+      if (profile) clientProfileId = profile.id;
+    }
+
     const project = await prisma.project.create({
       data: {
         freelancerId: user.id,
         customerId,
+        clientProfileId,
         name,
         slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
         description,
@@ -128,7 +136,7 @@ export async function updateProject(id: string, formData: FormData): Promise<any
 
     const project = await prisma.project.findUnique({ 
       where: { id },
-      include: { customer: { select: { id: true, freelancerId: true, hourlyRate: true } } }
+      include: { customer: { select: { id: true, freelancerId: true, hourlyRate: true, email: true } } }
     });
     if (!project || project.freelancerId !== user.id) throw new Error("Unauthorized");
 
@@ -145,6 +153,12 @@ export async function updateProject(id: string, formData: FormData): Promise<any
       }
     }
 
+    let clientProfileId = project.clientProfileId;
+    if (project.customer.email) {
+      const profile = await prisma.profile.findUnique({ where: { email: project.customer.email } });
+      if (profile) clientProfileId = profile.id;
+    }
+
     const updated = await prisma.project.update({
       where: { id },
       data: { 
@@ -152,7 +166,8 @@ export async function updateProject(id: string, formData: FormData): Promise<any
         slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
         description, 
         hourly_rate: finalHourlyRate, 
-        tech_stacks 
+        tech_stacks,
+        clientProfileId
       }
     });
 

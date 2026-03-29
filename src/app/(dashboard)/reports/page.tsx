@@ -6,6 +6,17 @@ export default async function ReportsPage(props: { searchParams: Promise<{ proje
   const data = await getReportsData();
   const { projectId } = await props.searchParams;
 
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <h1 className="text-2xl font-bold">Acesso Negado ou Erro ao Carregar</h1>
+        <p className="text-muted-foreground text-center max-w-md">
+          Não foi possível carregar os dados do relatório. Verifique se você está autenticado ou se existem projetos cadastrados.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

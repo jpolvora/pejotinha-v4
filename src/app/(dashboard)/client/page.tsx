@@ -17,7 +17,8 @@ export default async function ClientAreaPage() {
     where: {
       OR: [
         { clientProfileId: user.id },
-        { projectAccess: { some: { profileId: user.id } } }
+        { projectAccess: { some: { profileId: user.id } } },
+        { customer: { email: user.email } }
       ]
     },
     include: { 

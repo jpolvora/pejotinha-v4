@@ -69,12 +69,56 @@ async function main() {
     } catch (error) {
       console.error('\n\x1b[31m%s\x1b[0m', '❌ Falha ao inicializar o setup de nuvem.');
     }
-  } 
-  else {
-    console.log('\x1b[31m%s\x1b[0m', 'Opção inválida. Setup encerrado.');
-  }
+    } 
+    else {
+      console.log('\x1b[31m%s\x1b[0m', 'Opção inválida. Setup encerrado.');
+      rl.close();
+      return;
+    }
 
-  rl.close();
-}
+    // Google Auth Configuration
+    console.log('\n--------------------------------------------------');
+    console.log('\x1b[36m%s\x1b[0m', '🔒 Configuração de Autenticação via Google');
+    console.log('1. \x1b[32mHabilitar\x1b[0m Google Login');
+    console.log('2. \x1b[31mDesabilitar\x1b[0m Google Login');
+    console.log('--------------------------------------------------');
+    const googleChoice = await question('Escolha uma opção (1 ou 2): ');
+
+    if (googleChoice === '1') {
+      const clientId = await question('Google Client ID: ');
+      const clientSecret = await question('Google Client Secret: ');
+      
+      const envFile = answer === '1' ? '.env' : '.env.cloud';
+      const existingEnv = readFileSync(envFile, 'utf8');
+      
+      // Update or Append Google Auth Vars
+      let newEnv = existingEnv;
+      const updateVar = (key, value) => {
+        if (newEnv.includes(key)) {
+          newEnv = newEnv.replace(new RegExp(`${key}=.*`), `${key}=${value}`);
+        } else {
+          newEnv += `\n${key}=${value}`;
+        }
+      };
+
+      updateVar('GOOGLE_CLIENT_ID', clientId);
+      updateVar('GOOGLE_CLIENT_SECRET', clientSecret);
+      updateVar('NEXT_PUBLIC_GOOGLE_AUTH_ENABLED', 'true');
+      
+      writeFileSync(envFile, newEnv);
+      console.log('\x1b[32m%s\x1b[0m', '✅ Google Auth configurado com sucesso!');
+    } else {
+      const envFile = answer === '1' ? '.env' : '.env.cloud';
+      const existingEnv = readFileSync(envFile, 'utf8');
+      let newEnv = existingEnv.replace(/NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true/g, 'NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=false');
+      if (!newEnv.includes('NEXT_PUBLIC_GOOGLE_AUTH_ENABLED')) {
+        newEnv += '\nNEXT_PUBLIC_GOOGLE_AUTH_ENABLED=false';
+      }
+      writeFileSync(envFile, newEnv);
+      console.log('\x1b[33m%s\x1b[0m', 'ℹ️  Google Auth desabilitado.');
+    }
+
+    rl.close();
+  }
 
 main();

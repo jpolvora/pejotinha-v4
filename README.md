@@ -161,8 +161,17 @@ Confira a [documentação de integrações](./docs/INTEGRATIONS.md) para saber c
 ### Access Control (SignUp/Login)
 ![Login](public/screenshots/login.png)
 
-### Project Management
+### Projects & Workspaces
 ![Projects](public/screenshots/projects.png)
+
+### Client Management
+![Clients](public/screenshots/clients.png)
+
+### Project Details & Tasks
+![Project Details](public/screenshots/project_details.png)
+
+### Activity Registration (AI Assisted)
+![Log Activity](public/screenshots/log_activity.png)
 
 ---
 

@@ -8,6 +8,10 @@ GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, servi
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres, anon, authenticated, service_role;
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO postgres, anon, authenticated, service_role;
 
+-- Storage Permissions
+GRANT USAGE ON SCHEMA storage TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA storage TO postgres, anon, authenticated, service_role;
+
 -- 2. Ensure default privileges for future tables
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres, anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres, anon, authenticated, service_role;
@@ -48,8 +52,34 @@ ALTER TABLE public.personal_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.project_access ENABLE ROW LEVEL SECURITY;
 
--- 5. RLS Policies
+-- 5. Storage Setup & RLS
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('evidence-storage', 'evidence-storage', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Nota: No Supabase Local, RLS já vem habilitado para storage.objects por padrão. 
+-- Tentar habilitar via script pode falhar se não formos o dono (supabase_admin).
+
+DROP POLICY IF EXISTS "Allow authenticated uploads to evidence-storage" ON storage.objects;
+CREATE POLICY "Allow authenticated uploads to evidence-storage" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'evidence-storage');
+
+DROP POLICY IF EXISTS "Allow authenticated updates in evidence-storage" ON storage.objects;
+CREATE POLICY "Allow authenticated updates in evidence-storage" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'evidence-storage');
+
+DROP POLICY IF EXISTS "Allow public read access to evidence-storage" ON storage.objects;
+CREATE POLICY "Allow public read access to evidence-storage" ON storage.objects FOR SELECT TO public USING (bucket_id = 'evidence-storage');
+
+DROP POLICY IF EXISTS "Allow authenticated select in evidence-storage" ON storage.objects;
+CREATE POLICY "Allow authenticated select in evidence-storage" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'evidence-storage');
+
+DROP POLICY IF EXISTS "Allow authenticated deletes from evidence-storage" ON storage.objects;
+CREATE POLICY "Allow authenticated deletes from evidence-storage" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'evidence-storage');
+
+-- 6. RLS Policies
 
 -- Profiles
 DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
@@ -88,8 +118,17 @@ DROP POLICY IF EXISTS "Freelancers can update activities for their projects" ON 
 CREATE POLICY "Freelancers can update activities for their projects" ON public.activities FOR UPDATE USING (EXISTS (SELECT 1 FROM public.projects WHERE id = project_id AND freelancer_id = auth.uid()));
 DROP POLICY IF EXISTS "Freelancers can delete activities for their projects" ON public.activities;
 CREATE POLICY "Freelancers can delete activities for their projects" ON public.activities FOR DELETE USING (EXISTS (SELECT 1 FROM public.projects WHERE id = project_id AND freelancer_id = auth.uid()));
+
+-- Clients/Supervisors can view non-private activities
 DROP POLICY IF EXISTS "Clients can view activities of assigned projects" ON public.activities;
-CREATE POLICY "Clients can view activities of assigned projects" ON public.activities FOR SELECT USING (EXISTS (SELECT 1 FROM public.projects WHERE id = project_id AND client_profile_id = auth.uid()));
+CREATE POLICY "Clients can view activities of assigned projects" ON public.activities FOR SELECT USING (
+  (
+    EXISTS (SELECT 1 FROM public.projects p WHERE p.id = project_id AND p.client_profile_id = auth.uid())
+    OR 
+    EXISTS (SELECT 1 FROM public.project_access pa WHERE pa.project_id = project_id AND pa.profile_id = auth.uid())
+  ) 
+  AND is_private = false
+);
 
 -- Evidences
 DROP POLICY IF EXISTS "Freelancers can view evidences of their projects" ON public.evidences;
@@ -100,8 +139,18 @@ DROP POLICY IF EXISTS "Freelancers can update evidences of their projects" ON pu
 CREATE POLICY "Freelancers can update evidences of their projects" ON public.evidences FOR UPDATE USING (EXISTS (SELECT 1 FROM public.activities a JOIN public.projects p ON a.project_id = p.id WHERE a.id = activity_id AND p.freelancer_id = auth.uid()));
 DROP POLICY IF EXISTS "Freelancers can delete evidences of their projects" ON public.evidences;
 CREATE POLICY "Freelancers can delete evidences of their projects" ON public.evidences FOR DELETE USING (EXISTS (SELECT 1 FROM public.activities a JOIN public.projects p ON a.project_id = p.id WHERE a.id = activity_id AND p.freelancer_id = auth.uid()));
+
+-- Clients/Supervisors can view evidences of non-private activities
 DROP POLICY IF EXISTS "Clients can view evidences of assigned projects" ON public.evidences;
-CREATE POLICY "Clients can view evidences of assigned projects" ON public.evidences FOR SELECT USING (EXISTS (SELECT 1 FROM public.activities a JOIN public.projects p ON a.project_id = p.id WHERE a.id = activity_id AND p.client_profile_id = auth.uid()));
+CREATE POLICY "Clients can view evidences of assigned projects" ON public.evidences FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.activities a 
+    JOIN public.projects p ON a.project_id = p.id 
+    WHERE a.id = activity_id 
+    AND (p.client_profile_id = auth.uid() OR EXISTS (SELECT 1 FROM public.project_access pa WHERE pa.project_id = p.id AND pa.profile_id = auth.uid()))
+    AND a.is_private = false
+  )
+);
 
 -- Approvals
 DROP POLICY IF EXISTS "Freelancers can view approvals of their activities" ON public.approvals;
@@ -129,5 +178,19 @@ CREATE POLICY "Freelancers can access their own invoices" ON public.invoices FOR
 DROP POLICY IF EXISTS "Freelancers can access their own personal events" ON public.personal_events;
 CREATE POLICY "Freelancers can access their own personal events" ON public.personal_events FOR ALL USING (auth.uid() = freelancer_id);
 
--- 6. Reload Postgrest schema cache
+-- System Settings (Allow reading for public/auth)
+DROP POLICY IF EXISTS "System settings are readable by everyone" ON public.system_settings;
+CREATE POLICY "System settings are readable by everyone" ON public.system_settings FOR SELECT USING (true);
+
+-- Invitations
+DROP POLICY IF EXISTS "Freelancers can manage their invitations" ON public.invitations;
+CREATE POLICY "Freelancers can manage their invitations" ON public.invitations FOR ALL USING (auth.uid() = freelancer_id);
+
+-- Project Access
+DROP POLICY IF EXISTS "Freelancers can manage project access" ON public.project_access;
+CREATE POLICY "Freelancers can manage project access" ON public.project_access FOR ALL USING (EXISTS (SELECT 1 FROM public.projects p WHERE p.id = project_id AND p.freelancer_id = auth.uid()));
+DROP POLICY IF EXISTS "Clients can view their own access" ON public.project_access;
+CREATE POLICY "Clients can view their own access" ON public.project_access FOR SELECT USING (auth.uid() = profile_id);
+
+-- 7. Reload Postgrest schema cache
 NOTIFY pgrst, 'reload schema';

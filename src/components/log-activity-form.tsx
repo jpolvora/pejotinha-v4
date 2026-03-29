@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Link as LinkIcon, FileText, Camera, File as FileIcon, Sparkles, Loader2, Bot } from "lucide-react";
+import { X, Link as LinkIcon, FileText, Camera, File as FileIcon, Sparkles, Loader2, Bot, GitCommit } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { createActivity } from "@/actions/activities";
 import { extractActivityPayload } from "@/actions/ai";
 import { SubmitButton } from "@/components/submit-button";
@@ -14,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 
 type Evidence = {
   id: string;
-  type: 'file' | 'link' | 'text' | 'observation' | 'commit';
+  type: 'file' | 'link' | 'text' | 'observation' | 'commit' | 'gif' | 'video';
   file?: File;
   content?: string;
   previewUrl?: string;
@@ -45,7 +46,7 @@ export function LogActivityForm({ projectId, tasks = [] }: { projectId: string, 
     }
   }, [startTime, endTime]);
 
-  // Handle Ctrl+V to paste images/links/text
+  // Handle Ctrl+V to paste images/links/text/gifs
   const handlePaste = (e: React.ClipboardEvent) => {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
@@ -54,13 +55,25 @@ export function LogActivityForm({ projectId, tasks = [] }: { projectId: string, 
             const file = item.getAsFile();
             if (file) {
                 const previewUrl = URL.createObjectURL(file);
-                setEvidences(prev => [...prev, { id: Date.now().toString() + i, type: 'file', file, previewUrl }]);
+                const isGif = file.type === 'image/gif';
+                setEvidences(prev => [...prev, { 
+                  id: Date.now().toString() + i, 
+                  type: isGif ? 'gif' : 'file', 
+                  file, 
+                  previewUrl 
+                }]);
             }
         } else if (item.type === 'text/plain') {
             item.getAsString(text => {
                 const id = Date.now().toString() + i;
                 if (text.startsWith('http')) {
-                    setEvidences(prev => [...prev, { id, type: 'link', content: text }]);
+                    const isVideo = text.match(/\.(mp4|webm|mov)$/i);
+                    const isGif = text.match(/\.gif$/i);
+                    setEvidences(prev => [...prev, { 
+                      id, 
+                      type: isVideo ? 'video' : (isGif ? 'gif' : 'link'), 
+                      content: text 
+                    }]);
                 } else if (/^[0-9a-f]{7,40}$/i.test(text)) {
                     setEvidences(prev => [...prev, { id, type: 'commit', content: text }]);
                 } else {
@@ -98,8 +111,9 @@ export function LogActivityForm({ projectId, tasks = [] }: { projectId: string, 
          formData.append(`evidence_content_${i}`, ev.content);
       }
     });
-    formData.append('task_id', selectedTaskId);
+    formData.append('task_id', selectedTaskId || "");
     formData.append('evidence_count', evidences.length.toString());
+    formData.append('is_private', (document.getElementById('is_private') as HTMLInputElement)?.checked ? 'true' : 'false');
     
     await createActivity(formData);
     // Redirect is handled inside createActivity action
@@ -262,17 +276,32 @@ export function LogActivityForm({ projectId, tasks = [] }: { projectId: string, 
               />
             </div>
 
-            <div className="flex items-center space-x-2 pt-2">
-              <input 
-                type="checkbox" 
-                id="is_paid" 
-                name="is_paid" 
-                value="true" 
-                className="w-5 h-5 accent-primary cursor-pointer rounded border-2 border-primary" 
-              />
-              <Label htmlFor="is_paid" className="cursor-pointer font-bold uppercase tracking-widest text-[11px] text-green-600 dark:text-green-400">
-                Mark as Paid (JÁ FOI PAGO)
-              </Label>
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="is_paid" 
+                  name="is_paid" 
+                  value="true" 
+                  className="w-5 h-5 accent-green-600 cursor-pointer rounded border-2 border-green-600" 
+                />
+                <Label htmlFor="is_paid" className="cursor-pointer font-bold uppercase tracking-widest text-[11px] text-green-600 dark:text-green-400">
+                  Mark as Paid (JÁ FOI PAGO)
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="is_private" 
+                  name="is_private" 
+                  value="true" 
+                  className="w-5 h-5 accent-amber-600 cursor-pointer rounded border-2 border-amber-600" 
+                />
+                <Label htmlFor="is_private" className="cursor-pointer font-bold uppercase tracking-widest text-[11px] text-amber-600 dark:text-amber-400">
+                  Private Log (Freelancer Only)
+                </Label>
+              </div>
             </div>
           </div>
 
@@ -304,18 +333,40 @@ export function LogActivityForm({ projectId, tasks = [] }: { projectId: string, 
                       <X className="h-3 w-3" />
                     </Button>
                     
-                    {ev.type === 'file' && ev.previewUrl ? (
-                      ev.file?.type.startsWith('video/') ? (
-                        <video src={ev.previewUrl} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-80" />
+                    {(ev.type === 'file' || ev.type === 'gif' || ev.type === 'video') && (ev.previewUrl || ev.type === 'video' || ev.type === 'gif') ? (
+                      (ev.file?.type.startsWith('video/') || ev.type === 'video') ? (
+                        <div className="absolute inset-0 w-full h-full bg-black">
+                           <video src={ev.previewUrl || ev.content} autoPlay loop muted playsInline className="w-full h-full object-cover opacity-80" />
+                           <div className="absolute top-1 left-1">
+                              <Badge variant="secondary" className="text-[8px] bg-black/50 text-white border-0 py-0 px-1">VIDEO</Badge>
+                           </div>
+                        </div>
                       ) : (
-                        <img src={ev.previewUrl} alt="preview" className="absolute inset-0 w-full h-full object-cover opacity-80" />
+                        <div className="absolute inset-0 w-full h-full">
+                           <img src={ev.previewUrl || ev.content} alt="preview" className="w-full h-full object-cover opacity-80" />
+                           {ev.type === 'gif' && (
+                             <div className="absolute top-1 left-1">
+                                <Badge variant="secondary" className="text-[8px] bg-black/50 text-white border-0 py-0 px-1">GIF</Badge>
+                             </div>
+                           )}
+                        </div>
                       )
-                    ) : ev.type === 'file' ? (
-                      <FileIcon className="h-8 w-8 text-muted-foreground" />
                     ) : ev.type === 'link' ? (
-                      <LinkIcon className="h-8 w-8 text-blue-500" />
+                      <>
+                        <LinkIcon className="h-8 w-8 text-blue-500" />
+                        <div className="absolute top-1 left-1">
+                            <Badge variant="secondary" className="text-[8px] bg-blue-500/20 text-blue-500 border-0 py-0 px-1">LINK</Badge>
+                        </div>
+                      </>
+                    ) : ev.type === 'commit' || ev.type === 'observation' ? (
+                      <>
+                        {ev.type === 'commit' ? <GitCommit className="h-8 w-8 text-purple-500" /> : <FileText className="h-8 w-8 text-amber-500" />}
+                        <div className="absolute top-1 left-1">
+                            <Badge variant="secondary" className="text-[8px] bg-primary/20 text-primary border-0 py-0 px-1 uppercase">{ev.type}</Badge>
+                        </div>
+                      </>
                     ) : (
-                      <FileText className="h-8 w-8 text-muted-foreground" />
+                      <FileIcon className="h-8 w-8 text-muted-foreground" />
                     )}
                     
                     <span className="text-xs truncate w-full flex text-center justify-center mt-2 z-10 bg-background/90 px-2 py-1 rounded relative font-medium shadow-sm">

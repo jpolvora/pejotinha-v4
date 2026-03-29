@@ -35,10 +35,9 @@ function serializeValue(obj: any): any {
 }
 
 export async function actionWrapper<T>(
-  action: (user: any, formData?: FormData) => Promise<T>
+  action: (user: any, supabase: any) => Promise<T>
 ): Promise<ActionResponse<T> | any> {
   try {
-    // Dynamic import to prevent client-side bundling of server-only modules
     const { createClient } = await import("@/lib/supabase/server")
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -47,7 +46,7 @@ export async function actionWrapper<T>(
       return { success: false, error: 'Not authenticated' }
     }
 
-    const result = await action(user)
+    const result = await action(user, supabase)
     return { success: true, data: serializeValue(result) } as any
   } catch (err: any) {
     console.error("Action Error:", err)

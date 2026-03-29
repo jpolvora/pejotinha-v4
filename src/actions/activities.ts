@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { summarizeWorkEvents } from "./ai";
 import { actionWrapper, ActionResponse } from "@/lib/action-utils";
-import { createClient } from "@/lib/supabase/server";
+
 
 export async function getActivities(projectId: string): Promise<any[]> {
   const result = await actionWrapper(async (user) => {
@@ -32,8 +32,7 @@ export async function getActivities(projectId: string): Promise<any[]> {
 }
 
 export async function createActivity(formData: FormData): Promise<any> {
-  const result = await actionWrapper(async (user) => {
-    const supabase = await createClient(); // Still need client for storage
+  const result = await actionWrapper(async (user, supabase) => {
     const projectId = formData.get("project_id") as string;
     const description = formData.get("description") as string;
     const executionPlan = formData.get("execution_plan") as string | null;
@@ -70,6 +69,9 @@ export async function createActivity(formData: FormData): Promise<any> {
     const isPaid = formData.get("is_paid") === "true";
     const paidAt = isPaid ? new Date() : null;
 
+    const taskIdString = formData.get("task_id") as string;
+    const taskId = taskIdString && taskIdString.trim() !== "" ? taskIdString : null;
+
     const activity = await prisma.activity.create({
       data: {
         projectId,
@@ -83,7 +85,7 @@ export async function createActivity(formData: FormData): Promise<any> {
         endTime,
         isPaid,
         paidAt,
-        taskId: formData.get("task_id") as string | null,
+        taskId,
         isPrivate: formData.get("is_private") === "true"
       } as any
     });
@@ -97,28 +99,42 @@ export async function createActivity(formData: FormData): Promise<any> {
           if (type === 'file') {
               const file = formData.get(`evidence_file_${i}`) as File;
               if (file && file.size > 0) {
+                  // Detect Evidence Type based on MIME
+                  let evidenceType = 'file';
+                  if (file.type.startsWith('image/')) {
+                    evidenceType = file.type.includes('gif') ? 'gif' : 'image';
+                  } else if (file.type.startsWith('video/')) {
+                    evidenceType = 'video';
+                  }
+
                   const fileExt = file.name.split('.').pop() || 'tmp';
                   const filePath = `${activity.id}/evidence_${Date.now()}_${i}.${fileExt}`;
                   
                   const { error: uploadError } = await supabase.storage
                     .from("evidence-storage")
-                    .upload(filePath, file);
-
-                  if (!uploadError) {
-                    const { data: { publicUrl } } = supabase.storage
-                      .from("evidence-storage")
-                      .getPublicUrl(filePath);
-                    
-                    await prisma.evidence.create({
-                      data: {
-                        activityId: activity.id,
-                        evidenceType: 'file',
-                        fileUrl: publicUrl
-                      }
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false
                     });
+
+                  if (uploadError) {
+                      console.error(`[Storage Error] Failed to upload ${file.name}:`, uploadError.message);
+                      continue; 
                   }
+
+                  const { data: { publicUrl } } = supabase.storage
+                    .from("evidence-storage")
+                    .getPublicUrl(filePath);
+                  
+                  await prisma.evidence.create({
+                    data: {
+                      activityId: activity.id,
+                      evidenceType: evidenceType,
+                      fileUrl: publicUrl
+                    }
+                  });
               }
-          } else if (type === 'link' || type === 'text') {
+          } else if (type === 'link' || type === 'text' || type === 'commit') {
               const content = formData.get(`evidence_content_${i}`) as string;
               if (content) {
                    await prisma.evidence.create({
@@ -160,8 +176,7 @@ export async function deleteActivity(id: string, projectId: string): Promise<any
 }
 
 export async function uploadEvidence(formData: FormData): Promise<ActionResponse> {
-  return await actionWrapper(async (user) => {
-    const supabase = await createClient();
+  return await actionWrapper(async (user, supabase) => {
     const file = formData.get("file") as File;
     const activityId = formData.get("activity_id") as string;
     const projectId = formData.get("project_id") as string;
@@ -174,6 +189,14 @@ export async function uploadEvidence(formData: FormData): Promise<ActionResponse
     });
     if (!activity || activity.project.freelancerId !== user.id) {
       throw new Error("Unauthorized");
+    }
+
+    // Detect Evidence Type base on MIME
+    let evidenceType = 'file';
+    if (file.type.startsWith('image/')) {
+      evidenceType = file.type.includes('gif') ? 'gif' : 'image';
+    } else if (file.type.startsWith('video/')) {
+      evidenceType = 'video';
     }
 
     const fileExt = file.name.split('.').pop();
@@ -192,6 +215,7 @@ export async function uploadEvidence(formData: FormData): Promise<ActionResponse
     await prisma.evidence.create({
       data: {
         activityId,
+        evidenceType: evidenceType,
         fileUrl: publicUrl
       }
     });
@@ -288,8 +312,7 @@ export async function updateActivity(id: string, formData: FormData): Promise<an
 }
 
 export async function addEvidence(activityId: string, projectId: string, formData: FormData): Promise<ActionResponse> {
-  return await actionWrapper(async (user) => {
-    const supabase = await createClient();
+  return await actionWrapper(async (user, supabase) => {
     const activity = await prisma.activity.findUnique({
         where: { id: activityId },
         include: { project: true }
@@ -305,6 +328,14 @@ export async function addEvidence(activityId: string, projectId: string, formDat
         const file = formData.get("file") as File;
         if (!file || file.size === 0) throw new Error("File required");
         
+        // Detect Evidence Type base on MIME
+        let evidenceType = 'file';
+        if (file.type.startsWith('image/')) {
+          evidenceType = file.type.includes('gif') ? 'gif' : 'image';
+        } else if (file.type.startsWith('video/')) {
+          evidenceType = 'video';
+        }
+
         const fileExt = file.name.split('.').pop();
         const filePath = `${activityId}/evidence_${Date.now()}.${fileExt}`;
         
@@ -321,7 +352,7 @@ export async function addEvidence(activityId: string, projectId: string, formDat
         await prisma.evidence.create({
             data: {
                 activityId,
-                evidenceType: 'file',
+                evidenceType: evidenceType,
                 fileUrl: publicUrl
             }
         });
@@ -343,8 +374,7 @@ export async function addEvidence(activityId: string, projectId: string, formDat
 }
 
 export async function deleteEvidence(id: string, activityId: string, projectId: string): Promise<ActionResponse> {
-  return await actionWrapper(async (user) => {
-    const supabase = await createClient();
+  return await actionWrapper(async (user, supabase) => {
     const evidence = await prisma.evidence.findUnique({
         where: { id },
         include: { activity: { include: { project: true } } }

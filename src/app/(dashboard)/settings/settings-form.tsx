@@ -33,8 +33,9 @@ const PROVIDERS = [
 
 const ENDPOINTS: Record<string, { label: string, value: string }[]> = {
   gemini: [
-    { label: 'Google Generative Language (Beta v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta' },
-    { label: 'Google OpenAI Shim (v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta/openai/' },
+    { label: 'Google Generative Language (v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta' },
+    { label: 'Google OpenAI Shim (v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta/openai' },
+    { label: 'Google OpenAI Shim v1 (v1beta)', value: 'https://generativelanguage.googleapis.com/v1beta/openai/v1' },
   ],
   openai: [{ label: 'Official OpenAI API (v1)', value: 'https://api.openai.com/v1' }],
   anthropic: [{ label: 'Anthropic API (v1)', value: 'https://api.anthropic.com/v1' }],
@@ -46,11 +47,15 @@ const ENDPOINTS: Record<string, { label: string, value: string }[]> = {
 
 const MODELS: Record<string, { label: string, value: string }[]> = {
   gemini: [
-    { label: 'Gemini 3.1 Pro (Flagship)', value: 'gemini-3.1-pro' },
-    { label: 'Gemini 3 Flash (Fast & Modern)', value: 'gemini-3-flash' },
-    { label: 'Gemini 3.1 Flash-Lite (Economical)', value: 'gemini-3.1-flash-lite' },
-    { label: 'Gemini 2.5 Pro (Standard)', value: 'gemini-2.5-pro' },
-    { label: 'Gemini 2.5 Flash', value: 'gemini-2.5-flash' },
+    { label: 'Gemini 3.1 Pro (Preview Flagship)', value: 'gemini-3.1-pro-preview' },
+    { label: 'Gemini 3 Flash (Preview)', value: 'gemini-3-flash-preview' },
+    { label: 'Gemini 3.1 Flash-Lite (Preview)', value: 'gemini-3.1-flash-lite-preview' },
+    { label: 'Gemini 2.5 Pro (Stable Standard)', value: 'gemini-2.5-pro' },
+    { label: 'Gemini 2.5 Flash (Fast)', value: 'gemini-2.5-flash' },
+    { label: 'Gemini 2.0 Pro', value: 'gemini-2.0-pro' },
+    { label: 'Gemini 2.0 Flash', value: 'gemini-2.0-flash' },
+    { label: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
+    { label: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
   ],
   openai: [
     { label: 'GPT-4o (Latest)', value: 'gpt-4o' },
@@ -91,7 +96,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       provider: String(initialData?.aiConfig?.provider || 'gemini'),
       apiKey: String(initialData?.aiConfig?.apiKey || ''),
       baseUrl: String(initialData?.aiConfig?.baseUrl || 'https://generativelanguage.googleapis.com/v1beta'),
-      model: String(initialData?.aiConfig?.model || 'gemini-3-flash'),
+      model: String(initialData?.aiConfig?.model || 'gemini-3-flash-preview'),
     },
     telegramConfig: {
       botToken: String(initialData?.telegramConfig?.botToken || ''),
@@ -207,10 +212,15 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
   // Calculate Request URL Preview
   const getRequestPreview = () => {
     const { provider: p, baseUrl, model } = formData.aiConfig
+    let url = ''
     if (p === 'gemini' && !baseUrl.includes('/openai')) {
-      return `${baseUrl}/models/${model}:generateContent`
+      url = `${baseUrl}/models/${model}:generateContent`
+    } else {
+      url = `${baseUrl}/chat/completions`
     }
-    return `${baseUrl}/chat/completions (POST)`
+    // Sanitize double slashes except the one after the protocol
+    const sanitizedUrl = url.replace(/([^:])\/\//g, '$1/')
+    return p !== 'gemini' || baseUrl.includes('/openai') ? `${sanitizedUrl} (POST)` : sanitizedUrl
   }
 
   const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {

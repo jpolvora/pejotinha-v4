@@ -15,7 +15,8 @@ async function getAIModel(preferredModel?: string) {
     throw new Error('Chave de API da IA não configurada. Vá para Configurações.')
   }
 
-  const { apiKey, baseUrl, model, provider } = settings.aiConfig!
+  const { apiKey, baseUrl: rawBaseUrl, model, provider } = settings.aiConfig!
+  const baseUrl = rawBaseUrl?.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl
 
   let aiModel;
   
@@ -26,7 +27,7 @@ async function getAIModel(preferredModel?: string) {
       apiKey,
       baseURL: baseUrl,
     })
-    aiModel = google(preferredModel || model || 'gemini-3-flash')
+    aiModel = google(preferredModel || model || 'gemini-3-flash-preview')
   } else if (provider === 'anthropic') {
     // Anthropic SDK
     const anthropic = createAnthropic({
@@ -101,7 +102,7 @@ export async function extractActivityPayload(text: string, currentTimeIso: strin
 
 export async function summarizeWorkEvents(events: string[]) {
   try {
-    const aiModel = await getAIModel('gemini-3-flash');
+    const aiModel = await getAIModel('gemini-3-flash-preview');
 
     const { text: summary } = await generateText({
       model: aiModel,

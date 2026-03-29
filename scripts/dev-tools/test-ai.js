@@ -21,7 +21,7 @@ async function test() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gemini-1.5-flash',
+          model: 'gemini-3-flash-preview',
           messages: [{ role: 'user', content: 'Say hi' }]
         })
       });

@@ -15,27 +15,23 @@ export default async function LogActivityPage(props: { params: Promise<{ id: str
   if (!project) return notFound();
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto mt-6">
-      <div className="flex items-center gap-4">
+    <div className="space-y-8 mt-6">
+      <div className="flex items-center gap-6 border-b border-dashed pb-8">
         <Link href={`/projects/${project.id}`}>
-          <Button variant="ghost" size="icon" className="shrink-0 transition-transform hover:-translate-x-1">
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="shrink-0 h-12 w-12 rounded-2xl border-2 hover:bg-primary/10 hover:border-primary/30 transition-all">
+            <ArrowLeft className="h-6 w-6" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Log Activity</h1>
-          <p className="text-muted-foreground">Register work completed for {project.name}.</p>
+          <h1 className="text-4xl font-black tracking-tight uppercase">Log Activity</h1>
+          <p className="text-muted-foreground font-medium">Register work completed for <span className="text-foreground font-bold">{project.name}</span>.</p>
         </div>
       </div>
 
-      <Card className="shadow-lg border-2 border-border/50 rounded-xl overflow-hidden">
-        <CardHeader className="bg-card border-b border-border/50 pb-6">
-           <CardTitle className="text-xl">Activity & Proof of Work</CardTitle>
-           <CardDescription>Record your time, sprint context, and paste (Ctrl+V) screenshots directly here.</CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6 pb-6">
+      <Card className="shadow-none border-2 border-border/50 rounded-[32px] overflow-hidden bg-card/30 backdrop-blur-sm">
+        <div className="p-8 md:p-12">
           <LogActivityForm projectId={project.id} tasks={tasks} />
-        </CardContent>
+        </div>
       </Card>
     </div>
   );

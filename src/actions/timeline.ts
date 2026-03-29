@@ -67,6 +67,7 @@ export async function getFilteredTimeline(options: TimelineFilterOptions) {
       include: {
         project: {
           select: {
+            id: true,
             name: true,
             slug: true,
             customer: {
@@ -101,6 +102,7 @@ export async function getFilteredTimeline(options: TimelineFilterOptions) {
         endTime: a.endTime,
         durationMinutes: a.durationMinutes,
         isPrivate: a.isPrivate,
+        projectId: a.project.id,
         projectSlug: a.project.slug,
         projectName: a.project.name,
         customerName: a.project.customer.name,

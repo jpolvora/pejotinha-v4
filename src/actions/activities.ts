@@ -31,6 +31,30 @@ export async function getActivities(projectId: string): Promise<any[]> {
   return result.success ? result.data! : [];
 }
 
+export async function getActivityById(id: string): Promise<any> {
+  const result = await actionWrapper(async (user) => {
+    const activity = await prisma.activity.findUnique({
+      where: { id },
+      include: {
+        evidences: true,
+        project: true,
+        task: true,
+      }
+    });
+
+    if (!activity) return null;
+
+    // Check access
+    const hasAccess = activity.project.freelancerId === user.id || 
+                    activity.project.clientProfileId === user.id;
+
+    if (!hasAccess) throw new Error("Unauthorized");
+
+    return activity;
+  });
+  return result.success ? result.data : null;
+}
+
 export async function createActivity(formData: FormData): Promise<any> {
   const result = await actionWrapper(async (user, supabase) => {
     const projectId = formData.get("project_id") as string;
@@ -277,11 +301,17 @@ export async function approveActivity(formData: FormData): Promise<any> {
 }
 
 export async function updateActivity(id: string, formData: FormData): Promise<any> {
-  return await actionWrapper(async (user) => {
+  return await actionWrapper(async (user, supabase) => {
     const description = formData.get("description") as string;
+    const sprint = formData.get("sprint") as string | null;
+    const ticket = formData.get("ticket") as string | null;
+    const startTimeRaw = formData.get("start_time") as string | null;
+    const endTimeRaw = formData.get("end_time") as string | null;
     const status = formData.get("status") as any;
     const isPaid = formData.get("is_paid") === "true";
     const projectId = formData.get("project_id") as string;
+    const taskIdString = formData.get("task_id") as string;
+    const taskId = taskIdString && taskIdString.trim() !== "" ? taskIdString : null;
 
     const activity = await prisma.activity.findUnique({
       where: { id },
@@ -292,22 +322,114 @@ export async function updateActivity(id: string, formData: FormData): Promise<an
       throw new Error("Unauthorized");
     }
 
-    const paidAt = isPaid && !activity.isPaid ? new Date() : (isPaid ? activity.paidAt : null);
+    let durationMinutes = parseInt(formData.get("duration_minutes") as string || "0", 10);
+    let startTime = startTimeRaw ? new Date(startTimeRaw) : null;
+    let endTime = endTimeRaw ? new Date(endTimeRaw) : null;
 
+    if (startTime && endTime) {
+      durationMinutes = Math.max(0, Math.round((endTime.getTime() - startTime.getTime()) / 60000));
+    }
+
+    const paidAt = isPaid && !activity.isPaid ? new Date() : (isPaid ? activity.paidAt : null);
     const isPrivate = formData.get("is_private") === "true";
+
+    // Recalculate value based on project rate
+    const hourlyRate = Number(activity.project.hourly_rate) || 0;
+    const value = (durationMinutes / 60) * hourlyRate;
+
+    const updateData: any = { 
+        description, 
+        sprint,
+        ticket,
+        startTime,
+        endTime,
+        durationMinutes,
+        value,
+        isPaid, 
+        paidAt,
+        taskId,
+        isPrivate
+    };
+
+    if (status) {
+      updateData.status = status;
+    }
 
     await prisma.activity.update({
       where: { id },
-      data: { 
-        description, 
-        status, 
-        isPaid, 
-        paidAt,
-        isPrivate
-      } as any
+      data: updateData
     });
 
+    // Handle Evidence Deletion
+    const deletedEvidenceIdsRaw = formData.get("deleted_evidence_ids") as string;
+    if (deletedEvidenceIdsRaw) {
+      const deletedIds = JSON.parse(deletedEvidenceIdsRaw) as string[];
+      for (const evidenceId of deletedIds) {
+        await deleteEvidence(evidenceId, id, projectId);
+      }
+    }
+
+    // Handle New Evidences Loop
+    const evidenceCount = parseInt(formData.get("evidence_count") as string || "0", 10);
+    if (evidenceCount > 0) {
+      for (let i = 0; i < evidenceCount; i++) {
+          const type = formData.get(`evidence_type_${i}`) as string;
+          
+          if (type === 'file') {
+              const file = formData.get(`evidence_file_${i}`) as File;
+              if (file && file.size > 0) {
+                  let evidenceType = 'file';
+                  if (file.type.startsWith('image/')) {
+                    evidenceType = file.type.includes('gif') ? 'gif' : 'image';
+                  } else if (file.type.startsWith('video/')) {
+                    evidenceType = 'video';
+                  }
+
+                  const fileExt = file.name.split('.').pop() || 'tmp';
+                  const filePath = `${id}/evidence_${Date.now()}_${i}.${fileExt}`;
+                  
+                  const { error: uploadError } = await supabase.storage
+                    .from("evidence-storage")
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                  if (uploadError) {
+                      console.error(`[Storage Error] Failed to upload ${file.name}:`, uploadError.message);
+                      continue; 
+                  }
+
+                  const { data: { publicUrl } } = supabase.storage
+                    .from("evidence-storage")
+                    .getPublicUrl(filePath);
+                  
+                  await prisma.evidence.create({
+                    data: {
+                      activityId: id,
+                      evidenceType: evidenceType,
+                      fileUrl: publicUrl
+                    }
+                  });
+              }
+          } else if (type === 'link' || type === 'text' || type === 'commit') {
+              const content = formData.get(`evidence_content_${i}`) as string;
+              if (content) {
+                   await prisma.evidence.create({
+                      data: {
+                        activityId: id,
+                        evidenceType: type,
+                        content
+                      }
+                    });
+              }
+          }
+      }
+    }
+
     revalidatePath(`/projects/${projectId}`);
+    revalidatePath(`/projects/${projectId}/activities/${id}/edit`);
+    return { success: true };
   });
 }
 

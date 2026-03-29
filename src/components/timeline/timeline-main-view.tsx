@@ -1,7 +1,8 @@
 "use client";
 
-import { Activity, Lock, CalendarDays, Timer, Image, Sparkles, ExternalLink, GitBranch, Briefcase, EyeOff, CheckCircle2, Clock } from "lucide-react";
+import { Activity, Lock, CalendarDays, Timer, Image, Sparkles, ExternalLink, GitBranch, Briefcase, EyeOff, CheckCircle2, Clock, Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { formatDateTime, formatDuration } from "@/lib/locale";
 
 export type TimelineItem = {
@@ -14,6 +15,7 @@ export type TimelineItem = {
   durationMinutes: number;
   isPrivate: boolean;
   projectSlug?: string;
+  projectId?: string;
   projectName?: string;
   customerName?: string;
   evidenceCount: number;
@@ -160,9 +162,25 @@ export function TimelineMainView({ items, loading }: { items: TimelineItem[], lo
                   )}
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                   {item.type === 'activity' && item.projectId && (
+                    <>
+                      <Link 
+                        href={`/projects/${item.projectId}/activities/${item.id}/edit`}
+                        className="flex items-center gap-1.5 text-[10px] font-black uppercase text-muted-foreground/60 hover:text-primary transition-all px-4 py-2 rounded-full hover:bg-primary/5 select-none"
+                      >
+                         Editar <Edit className="w-3 h-3" />
+                      </Link>
+                      <Link 
+                        href={`/projects/${item.projectId}#${item.id}`}
+                        className="flex items-center gap-1.5 text-[10px] font-black uppercase text-white bg-primary hover:bg-primary/90 transition-all px-4 py-2 rounded-full shadow-sm select-none"
+                      >
+                         Ver Detalhes <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    </>
+                   )}
                    <button className="hidden sm:flex items-center gap-1.5 text-[10px] font-black uppercase text-muted-foreground/60 hover:text-primary transition-all px-4 py-2 rounded-full hover:bg-primary/5 select-none">
-                     Log forense <ExternalLink className="w-3 h-3" />
+                     Log forense {isIA ? <Sparkles className="w-3 h-3" /> : <GitBranch className="w-3 h-3" />}
                    </button>
                 </div>
               </div>

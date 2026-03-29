@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
-import { Trash, Clock, CheckCircle, FileText, Plus, Briefcase, Users, Link as LinkIcon, GitCommit } from "lucide-react";
+import { Trash, Clock, CheckCircle, FileText, Plus, Briefcase, Users, Link as LinkIcon, GitCommit, Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -191,7 +191,7 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                 const status = (act as any).status || latestApproval?.status || 'pending';
 
                 return (
-                  <Card key={act.id} className={status === 'approved' ? 'border-l-4 border-l-green-500/50' : status === 'rejected' ? 'border-l-4 border-l-red-500/50' : ''}>
+                  <Card id={act.id} key={act.id} className={status === 'approved' ? 'border-l-4 border-l-green-500/50' : status === 'rejected' ? 'border-l-4 border-l-red-500/50' : ''}>
                     <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                       <div className="flex-1 pr-4">
                         <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
@@ -238,6 +238,13 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                       </div>
                       
                         <div className="flex gap-2">
+                          {isFreelancer && (
+                            <Link href={`/projects/${project.id}/activities/${act.id}/edit`}>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                          )}
                           {isFreelancer && !(act as any).isPaid && (
                             <form action={async (formData: FormData) => {
                                 "use server";

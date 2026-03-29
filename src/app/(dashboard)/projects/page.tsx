@@ -1,4 +1,4 @@
-import { getProjects, createProject, deleteProject } from "@/actions/projects";
+import { getProjects, createProject } from "@/actions/projects";
 import { getCustomers } from "@/actions/customers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import { Trash, Folder, Pencil } from "lucide-react";
+import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 import Link from "next/link";
 
 import { ProjectFormFields } from "@/components/projects/project-form-fields";
@@ -115,14 +116,7 @@ export default async function ProjectsPage(props: { searchParams?: Promise<{ cus
                           </Button>
                         </Link>
                       </div>
-                      <form action={async () => {
-                        "use server";
-                        await deleteProject(p.id);
-                      }}>
-                        <Button variant="ghost" size="icon" type="submit" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </form>
+                      <DeleteProjectButton id={p.id} name={p.name} />
                     </div>
                   </CardContent>
                 </Card>

@@ -158,14 +158,18 @@ export async function createActivity(formData: FormData): Promise<any> {
                     }
                   });
               }
-          } else if (type === 'link' || type === 'text' || type === 'commit') {
+          } else if (type === 'link' || type === 'text' || type === 'commit' || type === 'pull_request' || type === 'documentation' || type === 'other') {
               const content = formData.get(`evidence_content_${i}`) as string;
               if (content) {
+                   const createdAtRaw = formData.get(`evidence_created_at_${i}`) as string | null;
+                   const createdAt = createdAtRaw ? new Date(createdAtRaw) : undefined;
+                   
                    await prisma.evidence.create({
                       data: {
                         activityId: activity.id,
                         evidenceType: type,
-                        content
+                        content,
+                        createdAt
                       }
                     });
               }
@@ -412,14 +416,18 @@ export async function updateActivity(id: string, formData: FormData): Promise<an
                     }
                   });
               }
-          } else if (type === 'link' || type === 'text' || type === 'commit') {
+          } else if (type === 'link' || type === 'text' || type === 'commit' || type === 'pull_request' || type === 'documentation' || type === 'other') {
               const content = formData.get(`evidence_content_${i}`) as string;
               if (content) {
+                   const createdAtRaw = formData.get(`evidence_created_at_${i}`) as string | null;
+                   const createdAt = createdAtRaw ? new Date(createdAtRaw) : undefined;
+                   
                    await prisma.evidence.create({
                       data: {
                         activityId: id,
                         evidenceType: type,
-                        content
+                        content,
+                        createdAt
                       }
                     });
               }

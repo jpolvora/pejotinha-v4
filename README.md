@@ -6,22 +6,23 @@ Pejotinha é uma plataforma SaaS multiusuário voltada para freelancers que dese
 
 ## ✨ Funcionalidades em Destaque
 
-- **Signup & Auth**: Fluxo de cadastro integrado com Supabase Auth e sincronização automática de perfis.
+- **Signup & Auth**: Fluxo de cadastro integrado com Supabase Auth, suporte a **Google OAuth** e sincronização de perfis.
+- **Agile Taskboard**: Kanban dinâmico com prioridades, tags e rastreio de tempo integrado por tarefa.
 - **Hierarchical Access**: Gestão de acessos granular para projetos (Owner vs Supervisor).
-- **Proof of Work (PoW)**: Registro de atividades com evidências, prints e logs integrados.
-- **IA Assisted Logging**: Use linguagem natural para registrar suas horas.
-- **Timeline Integrada**: Visualize eventos pessoais e profissionais em uma linha do tempo unificada.
-- **Slug System**: Geração automática de URLs amigáveis para projetos.
+- **Proof of Work (PoW)**: Registro de atividades com evidências complexas (Arquivos + **Links Manuais**).
+- **IA Assisted Logging**: Use linguagem natural para registrar suas horas com extração automática de metadados.
+- **Account Management**: Área "My Profile" completa com gestão de senha e segurança.
+- **Slug System**: Geração automática de URLs amigáveis para projetos em tempo real.
 - **Vibe Coding History**: Histórico detalhado de todo o desenvolvimento em `/plans`.
 
 ---
 
 ## 🛠️ Tecnologias
-- **Frontend**: Next.js 16.2 (App Router & Turbopack), Tailwind CSS v4, Lucide React, Shadcn/UI.
-- **Backend / BaaS**: Supabase (Self-hosted ou Cloud) - Auth, Storage, Edge Functions.
-- **ORM**: Prisma (PostgreSQL).
-- **IA**: Vercel AI SDK (Google Gemini / OpenAI).
-- **Infra**: Docker Multi-stage (Development & Runner).
+- **Frontend**: Next.js 16.2 (App Router & Turbopack), Tailwind CSS v4, Lucide React, Framer Motion.
+- **Backend / BaaS**: Supabase (Self-hosted ou Cloud) - Auth, Storage, DB, RLS.
+- **ORM**: Prisma 7 (PostgreSQL).
+- **IA**: Vercel AI SDK (Google Gemini 1.5 Flash / Pro).
+- **Infra**: Docker Multi-stage (Coolify-ready).
 
 ---
 

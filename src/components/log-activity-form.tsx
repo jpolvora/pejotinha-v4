@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Link as LinkIcon, FileText, Camera, File as FileIcon, Sparkles, Loader2, Bot, GitCommit, Eye } from "lucide-react";
+import { X, Link as LinkIcon, FileText, Camera, File as FileIcon, Sparkles, Loader2, Bot, GitCommit, Eye, Plus, Trash2, Globe, History, Hash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { createActivity, updateActivity } from "@/actions/activities";
 import { useRouter } from "next/navigation";
@@ -16,10 +16,11 @@ import { useToast } from "@/hooks/use-toast";
 
 type Evidence = {
   id: string;
-  type: 'file' | 'link' | 'text' | 'observation' | 'commit' | 'gif' | 'video' | 'image';
+  type: 'file' | 'link' | 'text' | 'observation' | 'commit' | 'gif' | 'video' | 'image' | 'pull_request' | 'documentation' | 'other';
   file?: File;
   content?: string;
   previewUrl?: string;
+  createdAt?: string; // string representation for datetime-local
 };
 
 export function LogActivityForm({ 
@@ -47,7 +48,8 @@ export function LogActivityForm({
     id: ev.id,
     type: ev.evidenceType as any,
     content: ev.content || ev.fileUrl || "",
-    previewUrl: ev.fileUrl || undefined
+    previewUrl: ev.fileUrl || undefined,
+    createdAt: ev.createdAt ? new Date(ev.createdAt).toISOString().slice(0, 16) : undefined
   })));
   const [deletedEvidenceIds, setDeletedEvidenceIds] = useState<string[]>([]);
 
@@ -106,7 +108,9 @@ export function LogActivityForm({
   };
 
   const removeEvidence = async (id: string) => {
-    if (initialEvidences.some(ie => ie.id === id)) {
+    const isPersisted = initialEvidences.some(ie => ie.id === id);
+    if (isPersisted) {
+      if (!window.confirm("Deseja realmente excluir esta evidência? Ela será apagada permanentemente.")) return;
       setDeletedEvidenceIds(prev => [...prev, id]);
     }
     setEvidences(prev => prev.filter(e => e.id !== id));
@@ -124,6 +128,15 @@ export function LogActivityForm({
       setEvidences(prev => [...prev, ...newEvidences]);
     }
   };
+  
+  const addLinkRow = () => {
+    setEvidences(prev => [...prev, {
+      id: "new-" + Date.now(),
+      type: 'link',
+      content: "",
+      createdAt: new Date().toISOString().slice(0, 16)
+    }]);
+  };
 
   const router = useRouter();
 
@@ -136,6 +149,9 @@ export function LogActivityForm({
          formData.append(`evidence_file_${i}`, ev.file);
       } else if (ev.content) {
          formData.append(`evidence_content_${i}`, ev.content);
+         if (ev.createdAt) {
+           formData.append(`evidence_created_at_${i}`, ev.createdAt);
+         }
       }
     });
 
@@ -390,7 +406,9 @@ export function LogActivityForm({
 
             {evidences.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
-                {evidences.map((ev) => {
+                {evidences
+                  .filter(ev => !['link', 'commit', 'pull_request', 'documentation', 'other'].includes(ev.type))
+                  .map((ev) => {
                   const mediaUrl = ev.previewUrl || ev.content;
                   const isImage = (ev.type === 'image' || ev.type === 'gif') || (mediaUrl?.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i));
                   const isVideo = ev.type === 'video' || (mediaUrl?.match(/\.(mp4|webm|mov|ogg)$/i));
@@ -498,6 +516,102 @@ export function LogActivityForm({
                 </div>
               </div>
             )}
+
+            {/* Structured Links Section */}
+            <div className="mt-12 space-y-6">
+              <div className="flex items-center justify-between border-b border-border/40 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500">
+                    <Globe className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black uppercase tracking-widest">Links de Evidência</h4>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase opacity-60">Commits, PRs e Documentação</p>
+                  </div>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addLinkRow}
+                  className="rounded-xl font-bold gap-2 border-blue-500/20 hover:bg-blue-500/5 text-blue-600 dark:text-blue-400"
+                >
+                  <Plus className="h-4 w-4" />
+                  ADICIONAR LINK
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {evidences.filter(ev => ['link', 'commit', 'pull_request', 'documentation', 'other'].includes(ev.type)).length === 0 ? (
+                  <div className="py-8 text-center border-2 border-dashed rounded-3xl opacity-40">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Nenhum link estruturado adicionado</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    {evidences
+                      .filter(ev => ['link', 'commit', 'pull_request', 'documentation', 'other'].includes(ev.type))
+                      .map((ev, index) => (
+                        <div key={ev.id} className="group flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-2xl border bg-background/50 hover:bg-background transition-all hover:shadow-sm">
+                          <div className="flex-[0.15] w-full sm:w-auto">
+                            <select
+                              value={ev.type}
+                              onChange={(e) => {
+                                const newType = e.target.value as any;
+                                setEvidences(prev => prev.map(item => item.id === ev.id ? { ...item, type: newType } : item));
+                              }}
+                              className="w-full bg-secondary/50 border-0 rounded-xl h-10 px-3 text-[11px] font-black uppercase tracking-tight focus:ring-1 focus:ring-primary transition-all"
+                            >
+                              <option value="link">LINK GERAL</option>
+                              <option value="commit">COMMIT (GIT)</option>
+                              <option value="pull_request">PULL REQUEST</option>
+                              <option value="documentation">DOCUMENTAÇÃO</option>
+                              <option value="other">OUTROS</option>
+                            </select>
+                          </div>
+                          
+                          <div className="flex-1 w-full relative">
+                            <Input 
+                              placeholder="URL ou Referência (http://...)"
+                              value={ev.content || ""}
+                              onChange={(e) => {
+                                const newContent = e.target.value;
+                                setEvidences(prev => prev.map(item => item.id === ev.id ? { ...item, content: newContent } : item));
+                              }}
+                              className="h-10 border-0 bg-secondary/30 rounded-xl px-4 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary shadow-inner"
+                            />
+                            {ev.type === 'commit' && <GitCommit className="absolute right-3 top-2.5 h-4 w-4 opacity-30" />}
+                          </div>
+
+                          <div className="flex-[0.25] w-full sm:w-auto flex items-center gap-3">
+                            <div className="relative flex-1">
+                              <History className="absolute left-3 top-2.5 h-4 w-4 opacity-30 z-10" />
+                              <Input 
+                                type="datetime-local"
+                                value={ev.createdAt || ""}
+                                onChange={(e) => {
+                                  const newDate = e.target.value;
+                                  setEvidences(prev => prev.map(item => item.id === ev.id ? { ...item, createdAt: newDate } : item));
+                                }}
+                                className="h-10 border-0 bg-secondary/30 rounded-xl pl-9 pr-2 text-[10px] font-black focus-visible:ring-1 focus-visible:ring-primary shadow-inner uppercase"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeEvidence(ev.id)}
+                              className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl shrink-0 transition-colors"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="pt-8 mt-4 flex justify-end gap-6">

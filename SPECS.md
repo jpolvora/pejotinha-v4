@@ -30,17 +30,20 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 - [x] **Vibe Coding History:** Integração do `VibeCoderLogger` para rastreio de planos e walkthroughs em `/plans`.
 - [x] **Gestão de Clientes:** CRUD completo de Clientes (`Customer`).
 - [x] **Gestão de Projetos:** Cadastro de Projetos com `hourly_rate`, `tech_stacks` e **Auto-Slug Generation**.
-- [x] **Autenticação:** Integração com Supabase (Google OAuth e Email/Senha c/ **Signup unificado**).
+- [x] **Autenticação Avançada:** Integração com Supabase (Google OAuth e Email/Senha c/ **Signup unificado**). Configuração dinâmica via `SystemSetting`.
 - [x] **Segurança:** Criptografia AES-256-GCM para dados sensíveis via `ENCRYPTION_SECRET`.
+- [x] **User Profile Management:** Página "My Profile" para gestão de conta, senha e deleção (cascade cleanup).
 
 ### 2. Registro de Atividades (Proof of Work)
 - [x] **Log de Atividades:** Registro com descrição, duração, data/hora e metatags (`sprint`, `ticket`).
-- [x] **Gestão de Evidências:** Upload de arquivos e links para comprovação de trabalho.
+- [x] **Gestão de Evidências Pro:** Suporte a múltiplos arquivos, arraste e solte, e **Links Manuais** (URL, tipo, timestamp).
 - [x] **IA "Magic" Log:** Extração de payload estruturado a partir de texto natural.
 - [x] **Valor Automático:** Cálculo do valor da atividade com base no `hourly_rate` do projeto.
 
 ### 3. Produtividade & Finanças
-- [x] **Gestão de Tarefas (Tasks):** CRUD de tarefas com status (pending, doing, done).
+- [x] **Taskboard (Agile Pro):** Quadro Kanban dinâmico com colunas (Todo, Doing, Done).
+    - **Cards Pro:** Visualização de prioridades (LOW a URGENT), tags e tempo total acumulado por tarefa.
+    - **Vínculo Direto:** Registro de atividades vinculado a tarefas específicas para rastreabilidade total.
 - [x] **Controle de Despesas:** Registro de gastos vinculados a projetos ou ao freelancer.
 - [x] **Agenda Pessoal:** Registro de eventos privados para garantir transparência.
 - [x] **Faturamento (Invoicing):** Geração básica de faturas (rascunho, enviada, paga).
@@ -50,8 +53,10 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 - [x] **Dashboard:** Resumo de horas, faturamento e atividades recentes.
 - [x] **Reporting & Advanced Intelligence:** Relatórios detalhados com IA Summarization.
 - [x] **Client Portal (Hierarchical Access):** Sistema de convites com papéis granularizados (**Owner** e **Supervisor**) via `ProjectAccess`.
+- [x] **Proofs UI Pro:** Galeria de evidências com preview premium (Imagens/Vídeos) e links diretos.
 
 ---
+
 
 ## 🚀 Funcionalidades a Implementar (Backlog Prioritário)
 
@@ -61,15 +66,13 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 - [x] **Timeline Visual:** Componente unificado de atividades e eventos pessoais no Dashboard.
 - [x] **Sistema de Toasts Premium:** Padronizar feedbacks visuais com Toasts customizados.
 
-- [ ] **Taskboard (Agile):** Quadro Kanban dinâmico com colunas customizáveis (Todo, Doing, Done).
-    - **Drag & Drop:** Movimentação fluida de cards entre estados.
-    - **Vínculo de Atividades:** Possibilidade de associar logs de tempo (`Activity`) diretamente a uma tarefa (`Task`).
-    - **Cards Pro:** Visualização de progresso, tags e prioridades diretamente no card.
-- [ ] **Proofs UI Pro:** Galeria de evidências melhorada, com preview de imagens e links diretos para commits/documentos.
 - [ ] **Exportação PDF/Excel Avançada:** Para relatórios fiscais e faturas brutas.
 - [ ] **Client Invites & Portal UI:** Sistema de convites por e-mail e aceitação via token (UI Proativa).
+- [ ] **Global Search:** Busca unificada em clientes, projetos, tarefas e atividades (IA-powered).
+- [ ] **Dark/Light Mode Sync:** Auto-detecção de sistema e toggle persistente premium.
 
 ---
+
 
 ## 🔄 Fluxos de Negócio (Workflows)
 

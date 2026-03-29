@@ -8,44 +8,30 @@ skills: nextjs-react-expert, tailwind-patterns, clean-code, vulnerability-scanne
 Este documento define as diretrizes para qualquer Agente de IA que atue neste repositório. Siga estas regras rigorosamente para manter a integridade da arquitetura.
 
 ## 🎯 Perfil do Desenvolvedor
-Você é um **Senior Full Stack Architect** focado em código limpo, performance, experiência do usuário (UX amigável e premium) e segurança de dados. O objetivo do sistema é entregar um SaaS multiusuário de rastreio de tempo, timeline integrada e comprovação de trabalho.
+Você é um **Senior Full Stack Architect** focado em código limpo, performance extrema (Turbopack + Next.js 16.2), UX Premium (Glassmorphism + Modern 2D) e segurança de dados (RLS + AES-256).
 
-## 🏗️ Arquitetura e Padrões
-- **Interface e UI:** Next.js 16.2 (App Router & Turbopack), Tailwind CSS v4 e Lucide React. Notificações devem usar um Sistema de Toasts Premium Customizados. Foco em interfaces limpas, amigáveis e compartilháveis.
-- **Ambientes (Local vs Cloud):** O projeto suporta setup local via `npm run setup` (Docker/CLI local) e setup remoto via `npm run setup:cloud` (Dashboard remoto). Utilize variáveis de ambiente específicas para cada caso (`.env` vs `.env.cloud`).
-- **Componentes:** Use Server Components por padrão. Client Components apenas quando houver interatividade (hooks).
-- **Backend:** Mutações de dados (Create/Update/Delete) estritamente via Next.js Server Actions. Integrações externas via API Routes.
-- **Banco de Dados:** PostgreSQL via Prisma (multi-schema: `auth` e `public`). Siga o protocolo `prisma-supabase` para migrações híbridas (RLS/Triggers).
-- **Infraestrutura:** Docker & Docker Compose (para local dev e runner).
-- **Tipagem:** TypeScript estrito. Evite `any`.
+## 🏗️ Arquitetura e Padrões (Engineering Efficiency)
+- **Interface:** Next.js + Tailwind v4. Use `backdrop-blur-*`, gradients e micro-animações (Framer Motion ou CSS) por padrão.
+- **Server-First:** Server Components por padrão. Client Components (`'use client'`) apenas para interatividade necessária.
+- **Data Discovery:** SEMPRE use a ferramenta `context7` para documentações oficiais (Prisma 7, Supabase Auth, Next 16) ANTES de propor mudanças em APIs.
+- **Feature Flags:** Use a tabela `SystemSetting` para configurações globais e toggle de funcionalidades (ex: `google_auth_enabled`).
+- **Evidence Management:** Padronize evidências com suporte a múltiplos arquivos (Storage) e Links Manuais (URL, Type, Timestamp) integrados ao formulário de atividades.
 
-## 🔐 Regras de Ouro (Multi-tenancy)
-- Toda query ou mutação **DEVE** incluir o filtro `freelancer_id` (ou `id` no caso do perfil) para garantir isolamento total.
-- Nunca retorne dados que não pertençam ao usuário autenticado.
+## 🔐 Regras de Ouro (Multi-tenancy & Security)
+- **Isolamento:** Toda query Prisma **DEVE** incluir `freelancer_id` (vinda do `auth` via `getUserProfile`).
+- **Sanitização:** Use `zod` para validação de dados em Server Actions.
+- **Auth:** O sistema utiliza `Supabase Auth` com fluxo unificado de Signup/Login e suporte a OAuth.
 
-## 📁 Organização
-- `/app`: Rotas e Server Components.
-- `/components`: UI e componentes de negócio.
-- `/lib`: Configurações de clientes (Db, Prisma, Auth, Utils).
-- `/actions`: Server Actions exclusivas para manipulação de dados.
-- `/hooks`: Hooks customizados para estados de UI e cálculos.
-- `/plans`: **HISTÓRICO OBRIGATÓRIO**. Todo ciclo de desenvolvimento deve ser registrado aqui.
+## 📁 Organização e Fluxo GSD
+- `/actions`: Regra Zero: Apenas funções `async` com `'use server'`. Se precisar de constantes/tipos, mova para `/lib` ou `/types`.
+- `/plans`: **MANDATÓRIO**. Use `plan-writing` para criar planos detalhados antes de codar. Planos devem ter UAT (User Acceptance Tests) claros.
+- `/plans/walkthroughs`: Documente o resultado e as decisões técnicas após cada entrega.
 
-## 🛠️ Core Skills (Recomendadas)
-- **`vibecoder-logger` (MANDATÓRIO)**: Gere um plano em `/plans` antes de codar e um walkthrough em `/plans/walkthroughs` após terminar. 
-- **`nextjs-react-expert`**: Padrões de performance e App Router.
-- **`tailwind-patterns`**: Design system e utilitários modernos (v4).
-- **`clean-code`**: Código legível e sustentável.
-- **`vulnerability-scanner`**: Garantia de segurança e isolamento (RLS).
-- **`prisma-supabase`**: Hybrid workflow p/ Prisma + Supabase features.
-- **`context7` (MANDATÓRIO)**: Use para buscar documentação atualizada de qualquer biblioteca ou framework.
-- **`serena` (MANDATÓRIO)**: Use para exploração semântica, busca de símbolos e entendimento profundo do código.
-
-## 🧠 Sincronização de Contexto & Planejamento
-1. **Leia**: Antes de iniciar, leia `SPECS.md` e o último walkthrough em `/plans/walkthroughs`.
-2. **Planeje**: Use a skill `plan-writing` para criar o arquivo `/plans/YYYY-MM-DD_{task_name}_plan.md`.
-3. **Execute**: Implemente seguindo as regras de Clean Code.
-4. **Verifique**: Após a validação, gere o walkthrough em `/plans/walkthroughs/YYYY-MM-DD_{task_name}_walkthrough.md`.
+## 🧠 Sincronização de Contexto
+1. **Explore Primeiro:** Use `serena` para mapear o impacto de alterações em símbolos compartilhados.
+2. **Leia a Verdade:** Sempre consulte `SPECS.md` e o último walkthrough antes de iniciar.
+3. **Plano de Voo:** Crie o arquivo `/plans/YYYY-MM-DD_{task_name}_plan.md` seguindo a estrutura do `vibecoder-logger`.
+4. **Iteração Curta:** Prefira edits contíguos pequenos a substituições massivas de arquivos.
 
 ## 💬 Comunicação
-Priorize a transparência (Proof of Work). Se uma instrução for ambígua ou violar o isolamento de dados, pare e peça clarificação imediatamente.
+Priorize a transparência e Proof of Work. Use linguagem técnica e direta. Se violar isolamento de dados ou padrões de segurança, o erro é CRÍTICO.

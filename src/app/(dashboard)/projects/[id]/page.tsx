@@ -1,5 +1,5 @@
 import { getProjectById } from "@/actions/projects";
-import { getActivities, deleteActivity, approveActivity, generateProjectSummary, updateActivity } from "@/actions/activities";
+import { getActivities, approveActivity, generateProjectSummary, updateActivity } from "@/actions/activities";
 import { getProjectTasks, updateTaskStatus, deleteTask } from "@/actions/tasks";
 import { type task_status } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import { Trash, Clock, CheckCircle, FileText, Plus, Briefcase, Users, Link as LinkIcon, GitCommit, Edit } from "lucide-react";
+import { DeleteActivityButton } from "@/components/projects/delete-activity-button";
 import { Badge } from "@/components/ui/badge";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -260,14 +261,7 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                             </form>
                           )}
                           {isFreelancer && (
-                            <form action={async () => {
-                              "use server";
-                              await deleteActivity(act.id, project.id);
-                            }}>
-                              <Button variant="ghost" size="icon" type="submit" className="text-destructive h-8 w-8 hover:bg-destructive/10">
-                                <Trash className="h-4 w-4" />
-                              </Button>
-                            </form>
+                            <DeleteActivityButton id={act.id} projectId={project.id} description={act.description} />
                           )}
                         </div>
                     </CardHeader>

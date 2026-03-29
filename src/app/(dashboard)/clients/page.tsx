@@ -1,10 +1,11 @@
-import { getCustomers, createCustomer, deleteCustomer } from "@/actions/customers";
+import { getCustomers, createCustomer } from "@/actions/customers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import { Trash, Pencil } from "lucide-react";
+import { DeleteClientButton } from "@/components/clients/delete-client-button";
 import Link from "next/link";
 
 export default async function ClientsPage() {
@@ -69,14 +70,7 @@ export default async function ClientsPage() {
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <form action={async () => {
-                        "use server";
-                        await deleteCustomer(c.id);
-                      }}>
-                        <Button variant="ghost" size="icon" type="submit" className="text-destructive">
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </form>
+                      <DeleteClientButton id={c.id} name={c.name} />
                     </div>
                   </CardContent>
                 </Card>

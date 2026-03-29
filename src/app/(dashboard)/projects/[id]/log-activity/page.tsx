@@ -15,10 +15,10 @@ export default async function LogActivityPage(props: { params: Promise<{ id: str
   if (!project) return notFound();
 
   return (
-    <div className="space-y-8 mt-6">
-      <div className="flex items-center gap-6 border-b border-dashed pb-8">
+    <div className="space-y-8 mt-6 max-w-5xl mx-auto">
+      <div className="flex items-center gap-6 pb-8">
         <Link href={`/projects/${project.id}`}>
-          <Button variant="ghost" size="icon" className="shrink-0 h-12 w-12 rounded-2xl border-2 hover:bg-primary/10 hover:border-primary/30 transition-all">
+          <Button variant="ghost" size="icon" className="shrink-0 h-12 w-12 rounded-2xl border hover:bg-primary/10 hover:border-primary/30 transition-all">
             <ArrowLeft className="h-6 w-6" />
           </Button>
         </Link>
@@ -28,8 +28,8 @@ export default async function LogActivityPage(props: { params: Promise<{ id: str
         </div>
       </div>
 
-      <Card className="shadow-none border-2 border-border/50 rounded-[32px] overflow-hidden bg-card/30 backdrop-blur-sm">
-        <div className="p-8 md:p-12">
+      <Card className="shadow-none border-0 rounded-[32px] overflow-hidden bg-transparent">
+        <div className="p-0">
           <LogActivityForm projectId={project.id} tasks={tasks} />
         </div>
       </Card>

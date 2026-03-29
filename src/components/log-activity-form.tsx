@@ -196,9 +196,9 @@ export function LogActivityForm({
 
   return (
     <Card className="shadow-none border-0 bg-transparent text-left" onPaste={handlePaste}>
-      <CardContent className="p-0 space-y-8">
+      <CardContent className="p-0 space-y-12">
         {!isEditing && (
-          <div className="space-y-4 bg-primary/5 p-6 rounded-2xl border-2 border-primary/20">
+          <div className="space-y-4 bg-primary/5 p-6 rounded-3xl border border-primary/20 shadow-sm">
             <div className="flex items-center gap-2 mb-1 text-primary">
               <Bot className="h-6 w-6" />
               <h3 className="font-bold text-sm uppercase tracking-widest">Assistente IA</h3>
@@ -206,7 +206,7 @@ export function LogActivityForm({
             <p className="text-sm text-muted-foreground/80 leading-relaxed">Poupe tempo! Descreva o que você fez em linguagem natural. <br/><span className="text-[11px] font-medium italic opacity-70">Ex: "Trabalhei hoje na task UX-123 das 14h às 16h corrigindo o botão principal".</span></p>
             <Textarea
               placeholder="Descreva sua atividade aqui..."
-              className="resize-none h-24 bg-background border-2 focus-visible:ring-primary rounded-xl p-4 transition-all"
+              className="resize-none h-24 bg-background border-0 focus-visible:ring-1 focus-visible:ring-primary rounded-xl p-4 transition-all shadow-inner"
               value={aiText}
               onChange={(e) => setAiText(e.target.value)}
               disabled={isAiLoading}
@@ -227,12 +227,12 @@ export function LogActivityForm({
           </div>
         )}
         
-        <form action={actionWithData} className="space-y-8">
+        <form action={actionWithData} className="space-y-12">
           <input type="hidden" name="project_id" value={projectId} />
 
-          {/* Vínculo de Tarefa - SEÇÃO DESTAQUE */}
+          {/* Vínculo de Tarefa */}
           {tasks.length > 0 && (
-            <div className="space-y-4">
+            <div className="p-8 rounded-3xl border bg-card/50 space-y-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <Label htmlFor="task_id" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Missão Vinculada</Label>
                 {linkedTask && (
@@ -248,7 +248,7 @@ export function LogActivityForm({
                     id="task_id"
                     value={selectedTaskId}
                     onChange={(e) => setSelectedTaskId(e.target.value)}
-                    className="flex h-12 w-full rounded-xl border-2 border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
+                    className="flex h-12 w-full rounded-xl border-0 bg-background px-4 py-2 text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all shadow-sm"
                   >
                     <option value="">Nenhuma missão selecionada</option>
                     {tasks
@@ -261,7 +261,7 @@ export function LogActivityForm({
                   </select>
 
                   {linkedTask && (
-                    <div className="p-3 rounded-xl border-2 border-dashed border-primary/20 bg-primary/5 animate-in fade-in zoom-in-95 duration-300">
+                    <div className="p-3 rounded-xl bg-primary/5 animate-in fade-in zoom-in-95 duration-300">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge className="text-[9px] font-black h-4 px-1">{linkedTask.status}</Badge>
                         <span className="text-xs font-bold truncate">{linkedTask.name}</span>
@@ -273,36 +273,36 @@ export function LogActivityForm({
             </div>
           )}
 
-          <div className="space-y-6">
+          {/* Detalhes da Atividade */}
+          <div className="p-8 rounded-3xl border bg-card/50 space-y-8 shadow-sm">
             <h3 className="text-xs font-black uppercase text-muted-foreground/40 tracking-[0.2em]">Detalhes da Atividade</h3>
-            <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-xs font-bold uppercase tracking-widest opacity-60">O que você fez?</Label>
-                  <Input 
-                    id="description" 
-                    name="description" 
-                    value={description} 
-                    onChange={(e) => setDescription(e.target.value)} 
-                    placeholder="Ex: Implementação da UI do Login" 
-                    required 
-                    className="h-14 border-2 focus-visible:ring-primary rounded-xl text-lg font-medium px-4" 
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-xs font-bold uppercase tracking-widest opacity-60">O que você fez?</Label>
+              <Input 
+                id="description" 
+                name="description" 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                placeholder="Ex: Implementação da UI do Login" 
+                required 
+                className="h-14 border-0 bg-background focus-visible:ring-1 focus-visible:ring-primary rounded-xl text-lg font-medium px-4 shadow-sm" 
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="sprint" className="text-xs font-bold uppercase tracking-widest opacity-60">Ciclo / Sprint</Label>
-                <Input id="sprint" name="sprint" value={sprint} onChange={(e) => setSprint(e.target.value)} placeholder="Ex: Sprint 12" className="h-12 border-2 rounded-xl focus-visible:ring-primary px-4" />
+                <Input id="sprint" name="sprint" value={sprint} onChange={(e) => setSprint(e.target.value)} placeholder="Ex: Sprint 12" className="h-12 border-0 bg-background rounded-xl focus-visible:ring-1 focus-visible:ring-primary px-4 shadow-sm" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ticket" className="text-xs font-bold uppercase tracking-widest opacity-60">ID do Ticket / Card</Label>
-                <Input id="ticket" name="ticket" value={ticket} onChange={(e) => setTicket(e.target.value)} placeholder="Ex: JIRA-404" className="h-12 border-2 rounded-xl focus-visible:ring-primary px-4" />
+                <Input id="ticket" name="ticket" value={ticket} onChange={(e) => setTicket(e.target.value)} placeholder="Ex: JIRA-404" className="h-12 border-0 bg-background rounded-xl focus-visible:ring-1 focus-visible:ring-primary px-4 shadow-sm" />
               </div>
             </div>
           </div>
 
-          <div className="space-y-6">
+          {/* Registro de Tempo */}
+          <div className="p-8 rounded-3xl border bg-card/50 space-y-8 shadow-sm">
             <h3 className="text-xs font-black uppercase text-muted-foreground/40 tracking-[0.2em]">Registro de Tempo</h3>
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -313,7 +313,7 @@ export function LogActivityForm({
                   type="datetime-local" 
                   value={startTime}
                   onChange={e => setStartTime(e.target.value)}
-                  className="h-12 border-2 rounded-xl focus-visible:ring-primary px-4"
+                  className="h-12 border-0 bg-background rounded-xl focus-visible:ring-1 focus-visible:ring-primary px-4 shadow-sm"
                 />
               </div>
               <div className="space-y-2">
@@ -324,7 +324,7 @@ export function LogActivityForm({
                   type="datetime-local" 
                   value={endTime}
                   onChange={e => setEndTime(e.target.value)}
-                  className="h-12 border-2 rounded-xl focus-visible:ring-primary px-4"
+                  className="h-12 border-0 bg-background rounded-xl focus-visible:ring-1 focus-visible:ring-primary px-4 shadow-sm"
                 />
               </div>
             </div>
@@ -339,12 +339,12 @@ export function LogActivityForm({
                 value={duration} 
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDuration(parseInt(e.target.value) || 0)}
                 required
-                className="h-12 border-2 rounded-xl focus-visible:ring-primary text-xl font-black text-primary px-4" 
+                className="h-12 border-0 bg-background rounded-xl focus-visible:ring-1 focus-visible:ring-primary text-xl font-black text-primary px-4 shadow-sm" 
               />
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6 pt-4">
-              <div className="flex items-center space-x-3 bg-green-500/5 p-4 rounded-2xl border-2 border-green-500/10 flex-1">
+              <div className="flex items-center space-x-3 bg-green-500/5 p-4 rounded-2xl border border-green-500/10 flex-1">
                 <input 
                   type="checkbox" 
                   id="is_paid" 
@@ -357,7 +357,7 @@ export function LogActivityForm({
                 </Label>
               </div>
 
-              <div className="flex items-center space-x-3 bg-amber-500/5 p-4 rounded-2xl border-2 border-amber-500/10 flex-1">
+              <div className="flex items-center space-x-3 bg-amber-500/5 p-4 rounded-2xl border border-amber-500/10 flex-1">
                 <input 
                   type="checkbox" 
                   id="is_private" 
@@ -372,7 +372,8 @@ export function LogActivityForm({
             </div>
           </div>
 
-          <div className="space-y-6">
+          {/* Evidências */}
+          <div className="p-8 rounded-3xl border bg-card/50 space-y-8 shadow-sm">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black uppercase text-muted-foreground/40 tracking-[0.2em]">Provas de Trabalho (Evidências)</h3>
               <div className="relative cursor-pointer text-xs flex items-center gap-2 bg-secondary hover:bg-secondary/80 px-4 py-2.5 rounded-xl transition-all font-bold uppercase tracking-widest shadow-sm active:scale-95">
@@ -382,7 +383,7 @@ export function LogActivityForm({
               </div>
             </div>
             
-            <div className="p-10 rounded-2xl border-2 border-dashed border-border/60 text-center text-sm text-muted-foreground bg-muted/5 transition-all hover:bg-muted/10 group">
+            <div className="p-10 rounded-2xl border border-dashed border-border/60 text-center text-sm text-muted-foreground bg-muted/5 transition-all hover:bg-muted/10 group">
               <p className="font-bold text-lg text-foreground/80 group-hover:scale-105 transition-transform">Clique aqui e Cole (Ctrl + V)</p>
               <p className="mt-1 text-xs font-medium opacity-60">Imagens, links, commits ou textos para comprovação rápida.</p>
             </div>
@@ -396,7 +397,7 @@ export function LogActivityForm({
                   const isMedia = isImage || isVideo || ev.file?.type.startsWith('image/') || ev.file?.type.startsWith('video/');
 
                   return (
-                    <div key={ev.id} className="relative group rounded-2xl border-2 p-3 flex flex-col items-center justify-center min-h-[140px] overflow-hidden bg-background shadow-sm hover:shadow-md transition-all">
+                    <div key={ev.id} className="relative group rounded-2xl border p-3 flex flex-col items-center justify-center min-h-[140px] overflow-hidden bg-background shadow-sm hover:shadow-md transition-all">
                       <Button 
                         type="button"
                         variant="destructive" 
@@ -430,7 +431,7 @@ export function LogActivityForm({
                              {(ev.type === 'gif' || ev.type === 'image' || isImage) && (
                                <div className="absolute top-2 left-2">
                                   <Badge variant="secondary" className="text-[9px] font-black bg-black/60 text-white border-0 py-0.5 px-2 uppercase">{ev.type === 'image' || isImage ? 'IMG' : 'GIF'}</Badge>
-                               </div>
+                                </div>
                              )}
                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
                                 <Eye className="w-6 h-6 text-white" />
@@ -499,7 +500,7 @@ export function LogActivityForm({
             )}
           </div>
 
-          <div className="pt-8 border-t-2 border-dashed mt-10 flex justify-end gap-6">
+          <div className="pt-8 mt-4 flex justify-end gap-6">
             <SubmitButton 
               label={isEditing ? "Atualizar Atividade" : "Log Activity & Evidences"} 
               className="h-14 px-10 rounded-2xl font-black uppercase tracking-tighter text-lg shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all w-full sm:w-auto"

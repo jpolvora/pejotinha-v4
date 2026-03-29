@@ -47,6 +47,12 @@ export function UserDropdown() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="p-0">
+            <Link href="/profile" className="flex w-full items-center gap-2 px-1.5 py-1 cursor-pointer">
+              <User className="h-4 w-4" />
+              <span>Meu Perfil</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="p-0">
             <Link href="/settings" className="flex w-full items-center gap-2 px-1.5 py-1 cursor-pointer">
               <Settings className="h-4 w-4" />
               <span>Configurações</span>

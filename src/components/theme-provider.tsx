@@ -5,7 +5,7 @@ import * as React from "react"
 
 import type { ThemeProviderProps } from "next-themes"
 
-type ThemeColor = "theme-blue" | "theme-orange" | "theme-purple"
+type ThemeColor = "theme-blue" | "theme-orange" | "theme-purple" | "theme-green" | "theme-red" | "theme-zinc"
 
 interface ThemeColorContextType {
   themeColor: ThemeColor
@@ -39,7 +39,15 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 
   const handleSetThemeColor = (color: ThemeColor) => {
     const root = document.documentElement
-    root.classList.remove("theme-orange", "theme-blue", "theme-purple")
+    // Remove all possible theme classes
+    root.classList.remove(
+      "theme-blue", 
+      "theme-orange", 
+      "theme-purple", 
+      "theme-green", 
+      "theme-red", 
+      "theme-zinc"
+    )
     root.classList.add(color)
     localStorage.setItem("themeColor", color)
     setThemeColor(color)

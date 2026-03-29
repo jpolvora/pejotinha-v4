@@ -14,7 +14,8 @@ import {
   Settings,
   Menu,
   Command,
-  Receipt
+  Receipt,
+  User
 } from "lucide-react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -43,6 +44,7 @@ export function Sidebar({ className, hasClientProjects, userRole }: SidebarProps
     { label: "Cobrança", icon: Receipt, href: "/billing", active: pathname.includes("/billing"), hide: userRole === 'client' },
     { label: "Financeiro", icon: Receipt, href: "/expenses", active: pathname.includes("/expenses"), hide: userRole === 'client' },
     { label: "Relatórios", icon: PieChart, href: "/reports", active: pathname.includes("/reports") },
+    { label: "Meu Perfil", icon: User, href: "/profile", active: pathname === "/profile" },
     { label: "Configurações", icon: Settings, href: "/settings", active: pathname === "/settings" },
   ].filter(r => !(r as any).hide)
 

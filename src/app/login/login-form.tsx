@@ -38,12 +38,11 @@ export function LoginForm({ isGoogleEnabled }: LoginFormProps) {
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true)
-    try {
-      await loginWithGoogle()
-    } catch (error) {
-      console.error(error)
-      setIsGoogleLoading(false)
-    }
+    // We don't use try-catch here because Next.js redirect() throws a special error 
+    // that needs to bubble up to the client to trigger the actual navigation.
+    await loginWithGoogle()
+    // If we reach here, it means redirection didn't happen (possibly an error handled inside)
+    setIsGoogleLoading(false)
   }
 
   const toggleMode = () => {

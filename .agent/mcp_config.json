@@ -1,24 +1,10 @@
 {
     "mcpServers": {
-        "context7": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@upstash/context7-mcp",
-                "--api-key",
-                "YOUR_API_KEY"
-            ]
-        },
-        "shadcn": {
-            "command": "npx",
-            "args": [
-                "shadcn@latest",
-                "mcp"
-            ]
-        }
-        //other mcp servers
+        "context7": {},
+        "serena": {}
     }
 }
-
-// setup mcp server in  ~/.gemini\antigravity\mcp_config.json
-
+// context7: Retrieves latest docs for any library/framework (Mandatory)
+// serena: Semantic codebase exploration and symbol search (Mandatory)
+// Configuration is managed globally in AGENTS.md and GEMINI.md.
+// These tools are core to the project's development workflow.

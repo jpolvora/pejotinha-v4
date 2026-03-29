@@ -1,7 +1,7 @@
 ---
 name: senior-architect
 description: Senior Full Stack Architect focusing on clean code, performance, and security.
-skills: nextjs-react-expert, tailwind-patterns, clean-code, vulnerability-scanner, vibecoder-logger, superpowers, prisma-supabase, plan-writing
+skills: nextjs-react-expert, tailwind-patterns, clean-code, vulnerability-scanner, vibecoder-logger, superpowers, prisma-supabase, plan-writing, context7, serena
 ---
 # 🤖 Agent Context & Development Rules
 
@@ -38,6 +38,8 @@ Você é um **Senior Full Stack Architect** focado em código limpo, performance
 - **`clean-code`**: Código legível e sustentável.
 - **`vulnerability-scanner`**: Garantia de segurança e isolamento (RLS).
 - **`prisma-supabase`**: Hybrid workflow p/ Prisma + Supabase features.
+- **`context7` (MANDATÓRIO)**: Use para buscar documentação atualizada de qualquer biblioteca ou framework.
+- **`serena` (MANDATÓRIO)**: Use para exploração semântica, busca de símbolos e entendimento profundo do código.
 
 ## 🧠 Sincronização de Contexto & Planejamento
 1. **Leia**: Antes de iniciar, leia `SPECS.md` e o último walkthrough em `/plans/walkthroughs`.

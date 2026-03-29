@@ -10,13 +10,14 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 ---
 
 ## 🛠️ Stack Tecnológica
-- **Framework:** Next.js (App Router)
-- **Estilização:** Tailwind CSS + Lucide React
-- **Banco de Dados:** PostgreSQL via Prisma ORM
-- **Storage/Auth:** Supabase
-- **IA:** Vercel AI SDK (OpenAI/Google Gemini)
-- **Infra:** Docker & Docker Compose (Multi-stage: Dev/Prod)
-- **Deployment:** Self-hosted Supabase Architecture (CLI-driven)
+- **Framework:** Next.js 16.2 (App Router & Turbopack)
+- **Estilização:** Tailwind CSS v4 + Lucide React
+- **Design System:** Tema Dark e Light com 3 variações de cores (Blue, Orange, Purple)
+- **Layout:** Sidebar esquerda colapsável, Topbar com perfil/config e área principal em cards 2D modernos
+- **Banco de Dados:** PostgreSQL via Prisma 7 (Adapter-based)
+- **Storage/Auth:** Supabase Self-hosted
+- **IA:** Vercel AI SDK (Anthropic/Google Gemini/OpenAI)
+- **Infra:** Docker & Docker Compose (Coolify-ready)
 
 ---
 
@@ -61,10 +62,24 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 - [x] **Sistema de Toasts Premium:** Padronizar feedbacks visuais com Toasts customizados.
 
 ### 2. Expansão de Features
-- [x] **Relatórios Avançados:** Filtros dinâmicos por período, cliente e projeto com gráficos de produtividade.
-- [x] **Proofs UI Pro:** Galeria de evidências melhorada, com preview de imagens e links diretos para commits/documentos.
-- [x] **Exportação PDF/Excel:** Para relatórios de atividades via Print/PDF.
-- [x] **Client Invites:** Sistema de convites por e-mail e aceitação via token.
+- [ ] **Proofs UI Pro:** Galeria de evidências melhorada, com preview de imagens e links diretos para commits/documentos.
+- [ ] **Exportação PDF/Excel Avançada:** Para relatórios fiscais e faturas brutas.
+- [ ] **Client Invites & Portal UI:** Sistema de convites por e-mail e aceitação via token (UI Proativa).
+
+---
+
+## 🔄 Fluxos de Negócio (Workflows)
+
+### 1. Novo Cadastro (Freelancer First)
+- Todo usuário da plataforma inicia com o perfil de **Freelancer**.
+- O Freelancer cadastra **Clientes** (`Customer`) e então associa **Projetos** a estes clientes.
+- As atividades são registradas com data/hora e **Evidências Multi-tipo**.
+
+### 2. Convite & Área do Cliente
+- Qualquer usuário cadastrado pode ter o papel de **Cliente** em projetos de outros freelancers.
+- O Freelancer envia um convite via e-mail.
+- O Cliente aceita o convite e acessa a **Área do Cliente**, onde visualiza a timeline de atividades.
+- O Cliente pode aprovar/reprovar ou pedir revisões em atividades específicas.
 
 ---
 

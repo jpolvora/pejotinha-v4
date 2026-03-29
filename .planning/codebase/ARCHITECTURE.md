@@ -13,6 +13,7 @@
 - **Schema Management**: Multi-schema approach.
   - `auth`: Managed by Supabase.
   - `public`: Managed by Prisma and Supabase migrations.
+- **Data Layer Architecture**: Adapter-based (Prisma 7 + `@prisma/adapter-pg`).
 - **Database Persistence**: PostgreSQL.
 
 ## Security Controls

@@ -9,6 +9,8 @@
 ## Data & Backend
 - **Database**: PostgreSQL (Managed by Supabase)
 - **ORM**: Prisma 7.6.0
+- **Database Driver**: `pg` (node-postgres)
+- **Prisma Adapter**: `@prisma/adapter-pg`
 - **Auth**: Supabase SSR / Supabase Auth
 - **Client SDK**: `@supabase/supabase-js`, `@supabase/ssr`
 

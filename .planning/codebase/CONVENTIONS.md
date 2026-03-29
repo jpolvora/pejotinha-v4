@@ -16,3 +16,5 @@
 ## Workflow Patterns
 - **Server Actions**: All mutations must go through standardized server actions (`actionWrapper`).
 - **Prisma + Supabase**: Hybrid migration and sync via Prisma and Supabase tools.
+- **Prisma 7 Compliance**: Modifying datasource URLs in `schema.prisma` is prohibited. All DB configurations must be performed via `prisma.config.ts`.
+- **Driver Adapters**: All new Prisma Client instantiations (for scripts or tools) must use the `@prisma/adapter-pg` driver adapter.

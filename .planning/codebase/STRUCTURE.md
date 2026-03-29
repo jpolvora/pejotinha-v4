@@ -16,7 +16,9 @@
 - `plans/`: Recorded planning and development history.
 - `.planning/`: Active GSD planning and codebase map.
 
-## Automation & Scripting (`scripts/`)
-- `scripts/setup.mjs`: Local environment initialization.
-- `scripts/deploy.mjs`: Deployment automation.
-- `scripts/check-sanity.mjs`: Connectivity and configuration verification.
+## Configuration & Root Files
+- `prisma.config.ts`: Centralized Prisma 7 configuration (schema path, migrations, seed, and adapter settings).
+- `package.json`: Dependency management and npm scripts.
+- `next.config.js`: Next.js configuration.
+- `.env`: Environment variables (local dev).
+- `.env.cloud`: Environment variables (cloud dev).

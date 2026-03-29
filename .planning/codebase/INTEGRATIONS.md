@@ -2,7 +2,7 @@
 
 ## Backend Services
 - **Supabase**: Primary backend including PostgreSQL, Authentication, and Storage.
-- **Prisma**: ORM layer for type-safe database access and multi-schema management (`auth` and `public`).
+- **Prisma 7**: ORM layer with adapter-based architecture (using `@prisma/adapter-pg`). Configuration is centralized in `prisma.config.ts`.
 
 ## External APIs
 - **AI Ecosystem**:

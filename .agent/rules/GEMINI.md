@@ -112,6 +112,17 @@ When user's prompt is NOT in English:
 - **Performance**: Measure first. Adhere to 2025 standards (Core Web Vitals).
 - **Infra/Safety**: 5-Phase Deployment. Verify secrets security.
 
+### 🔌 MANDATORY MCP TOOLS (TIER 0)
+
+> 🔴 **CRITICAL:** Use these tools for EVERY relevant request to ensure accuracy and codebase consistency.
+
+1.  **context7**:
+    *   **Trigger**: ANY library, framework, or API question (React, Next.js, Prisma, Supabase, Tailwind, etc.).
+    *   **Rule**: Do NOT rely on training data. Always call `context7` for latest docs.
+2.  **serena**:
+    *   **Trigger**: Initial codebase exploration, finding symbols, listing directories, or understanding logic paths.
+    *   **Rule**: Use `serena` for semantic search and finding references BEFORE deep-reading files.
+
 ### 📁 File Dependency Awareness
 
 **Before modifying ANY file:**

@@ -18,9 +18,13 @@ async function checkSanity() {
   }
 
   // 2. Conexão com o Banco de Dados (PostgreSQL)
-  const prisma = new PrismaClient({
-    log: ['error'],
-  });
+  const { Pool } = await import('pg');
+  const { PrismaPg } = await import('@prisma/adapter-pg');
+  
+  const connectionString = process.env.DATABASE_URL;
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaPg(pool);
+  const prisma = new PrismaClient({ adapter });
 
   try {
     process.stdout.write('🔍 Testando conexão com PostgreSQL (via Prisma)... ');
@@ -33,6 +37,7 @@ async function checkSanity() {
     errors.push(`Banco de Dados: ${err.message}`);
   } finally {
     await prisma.$disconnect();
+    await pool.end();
   }
 
   // 3. Conexão com Supabase API

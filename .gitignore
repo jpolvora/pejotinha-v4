@@ -35,3 +35,14 @@ check_all_output*.txt
 full_tc*.txt
 debug_status.json
 .env.cloud
+
+# Build Info
+tsconfig.tsbuildinfo
+.next
+.turbo
+
+# Serena
+.serena/
+.gemini/
+.agent/
+**/tmp/

@@ -3,9 +3,10 @@
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { actionWrapper, ActionResponse } from "@/lib/action-utils"
-import { task_status } from "@prisma/client"
+import { task_status, task_priority } from "@prisma/client"
+export { task_status, task_priority }
 
-export async function createBatchTasks(projectId: string, tasks: { name: string, description?: string, dueDate?: string }[]): Promise<ActionResponse> {
+export async function createBatchTasks(projectId: string, tasks: { name: string, description?: string, dueDate?: string, priority?: task_priority, tags?: string[] }[]): Promise<ActionResponse> {
   return await actionWrapper(async (user) => {
     // Security: Check project ownership
     const project = await prisma.project.findUnique({
@@ -27,6 +28,8 @@ export async function createBatchTasks(projectId: string, tasks: { name: string,
         description: t.description,
         dueDate: t.dueDate ? new Date(t.dueDate) : null,
         status: 'pending' as task_status,
+        priority: t.priority || ('medium' as task_priority),
+        tags: t.tags || [],
         position: nextPos + idx
       } as any))
     })
@@ -43,6 +46,8 @@ export async function createTask(formData: FormData): Promise<ActionResponse> {
     const description = formData.get('description') as string
     const dueDate = formData.get('due_date') as string
     const status = (formData.get('status') || 'pending') as task_status
+    const priority = (formData.get('priority') || 'medium') as task_priority
+    const tags = (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) || []
 
     // Security: Check project ownership
     const project = await prisma.project.findUnique({
@@ -64,6 +69,8 @@ export async function createTask(formData: FormData): Promise<ActionResponse> {
         description,
         dueDate: dueDate ? new Date(dueDate) : null,
         status,
+        priority,
+        tags,
         position
       } as any
     })
@@ -118,6 +125,25 @@ export async function updateTaskPosition(taskId: string, status: task_status, po
   })
 }
 
+export async function linkActivityToTask(taskId: string, activityId: string): Promise<ActionResponse> {
+  return await actionWrapper(async (user) => {
+    const taskCheck = await prisma.task.findUnique({
+      where: { id: taskId },
+      include: { project: true }
+    });
+    if (!taskCheck || (taskCheck as any).project.freelancerId !== user.id) throw new Error("Unauthorized task access");
+
+    const activity = await prisma.activity.update({
+      where: { id: activityId },
+      data: { taskId } as any
+    })
+    
+    revalidatePath(`/projects/${taskCheck.projectId}`)
+    revalidatePath('/taskboard')
+    return activity
+  })
+}
+
 export async function deleteTask(taskId: string): Promise<ActionResponse> {
   return await actionWrapper(async (user) => {
     const taskCheck = await prisma.task.findUnique({
@@ -164,6 +190,9 @@ export async function getAllTasks(): Promise<any[]> {
       include: {
         project: {
           select: { name: true, slug: true }
+        },
+        activities: {
+          select: { durationMinutes: true }
         }
       },
       orderBy: [

@@ -4,7 +4,8 @@ import { useTransition, useState } from "react";
 import { addEvidence, deleteEvidence } from "@/actions/activities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Link as LinkIcon, GitCommit, FileText, Upload, Plus, X } from "lucide-react";
+import { Trash2, Link as LinkIcon, GitCommit, FileText, Upload, Plus, X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export function EvidenceManager({ activityId, projectId, initialEvidences }: { activityId: string, projectId: string, initialEvidences: any[] }) {
   const [isPending, startTransition] = useTransition();
@@ -29,21 +30,22 @@ export function EvidenceManager({ activityId, projectId, initialEvidences }: { a
             await addEvidence(activityId, projectId, formData);
             setShowAdd(false);
             setContent("");
-        } catch (err) {
+            toast.success("Evidência adicionada com sucesso!");
+        } catch (err: any) {
             console.error(err);
-            alert("Erro ao adicionar evidência.");
+            toast.error(err.message || "Erro ao adicionar evidência.");
         }
     });
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta evidência?")) return;
     startTransition(async () => {
         try {
             await deleteEvidence(id, activityId, projectId);
-        } catch (err) {
+            toast.success("Evidência removida.");
+        } catch (err: any) {
             console.error(err);
-            alert("Erro ao excluir evidência.");
+            toast.error(err.message || "Erro ao excluir evidência.");
         }
     });
   };
@@ -69,7 +71,7 @@ export function EvidenceManager({ activityId, projectId, initialEvidences }: { a
                         className="opacity-0 group-hover:opacity-100 p-1 text-destructive hover:bg-destructive/10 rounded transition-opacity disabled:opacity-50"
                         title="Remover evidência"
                     >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                     </button>
                 </div>
             ))}

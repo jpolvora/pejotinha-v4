@@ -4,11 +4,13 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { LogActivityForm } from "@/components/log-activity-form";
 import { getProjectById } from "@/actions/projects";
+import { getProjectTasks } from "@/actions/tasks";
 import { notFound } from "next/navigation";
 
 export default async function LogActivityPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const project = await getProjectById(params.id);
+  const tasks = await getProjectTasks(params.id);
 
   if (!project) return notFound();
 
@@ -32,7 +34,7 @@ export default async function LogActivityPage(props: { params: Promise<{ id: str
            <CardDescription>Record your time, sprint context, and paste (Ctrl+V) screenshots directly here.</CardDescription>
         </CardHeader>
         <CardContent className="pt-6 pb-6">
-          <LogActivityForm projectId={project.id} />
+          <LogActivityForm projectId={project.id} tasks={tasks} />
         </CardContent>
       </Card>
     </div>

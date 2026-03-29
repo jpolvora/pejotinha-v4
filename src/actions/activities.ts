@@ -23,6 +23,7 @@ export async function getActivities(projectId: string): Promise<any[]> {
       include: {
         evidences: true,
         approvals: true,
+        task: true,
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -82,6 +83,7 @@ export async function createActivity(formData: FormData): Promise<any> {
         endTime,
         isPaid,
         paidAt,
+        taskId: formData.get("task_id") as string | null,
         isPrivate: formData.get("is_private") === "true"
       } as any
     });

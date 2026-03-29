@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { EvidenceManager } from "@/components/evidence-manager";
+import { EvidenceGallery } from "@/components/evidence-gallery";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDateTime, formatDuration } from "@/lib/locale";
 import { MagicNarrator } from "@/components/magic-narrator";
@@ -58,6 +59,12 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
            <div className="bg-accent/50 p-4 rounded-2xl border border-dashed flex flex-col items-center justify-center min-w-[120px]">
               <span className="text-[10px] uppercase tracking-widest font-black opacity-50 mb-1">Taxa/Hora</span>
               <span className="text-xl font-black text-primary">{project.hourly_rate ? formatCurrency(Number(project.hourly_rate)) : "R$ 0,00"}</span>
+           </div>
+           <div className="bg-emerald-500/5 p-4 rounded-2xl border border-emerald-500/20 flex flex-col items-center justify-center min-w-[120px]">
+              <span className="text-[10px] uppercase tracking-widest font-black text-emerald-600/60 mb-1">Tempo Total</span>
+              <span className="text-xl font-black text-emerald-600">
+                {formatDuration(activities?.reduce((acc: number, curr: any) => acc + (curr.durationMinutes || 0), 0) || 0)}
+              </span>
            </div>
            {isFreelancer && (
              <Link href={`/projects/${project.id}/log-activity`} className="h-full">
@@ -269,52 +276,15 @@ export default async function ProjectDetailsPage(props: { params: Promise<{ id: 
                         </div>
                       </div>
                       
-                      {act.evidences && act.evidences.length > 0 && (
-                        <div className="mt-4 flex flex-col gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Proof of Work Gallery</span>
-                          <div className="flex flex-wrap gap-3">
-                             {act.evidences.map((ev: any) => {
-                               const isMedia = ev.fileUrl?.match(/\.(jpeg|jpg|gif|png|webp|mp4|webm)$/i);
-                               const isVideo = ev.fileUrl?.match(/\.(mp4|webm)$/i);
-                               const isCommit = ev.evidenceType === 'commit' || ev.evidenceType === 'git_commit' || ev.evidenceType === 'text' && ev.content?.includes('Commit');
-                               
-                               return (
-                                <div key={ev.id} className="relative group">
-                                  {ev.evidenceType === 'file' && isMedia ? (
-                                    <div className="relative w-32 h-24 rounded-xl overflow-hidden border-2 border-muted hover:border-primary/50 transition-all shadow-sm">
-                                      <a href={ev.fileUrl ?? undefined} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
-                                        {isVideo ? (
-                                           <video src={ev.fileUrl ?? undefined} autoPlay loop muted playsInline className="w-full h-full object-cover" />
-                                        ) : (
-                                           <img src={ev.fileUrl ?? undefined} alt="Evidence" className="w-full h-full object-cover" />
-                                        )}
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                          <Plus className="text-white w-6 h-6 border-2 rounded-full p-1" />
-                                        </div>
-                                      </a>
-                                    </div>
-                                  ) : (
-                                    <div className={`px-3 py-2 rounded-xl border-2 border-muted bg-muted/20 hover:bg-muted/40 transition-all flex items-center gap-2 max-w-[200px] ${isCommit ? 'bg-purple-500/5 border-purple-500/10' : ''}`}>
-                                      {ev.evidenceType === 'file' ? <FileText className="w-4 h-4 text-primary" /> :
-                                       ev.evidenceType === 'link' ? <LinkIcon className="w-4 h-4 text-emerald-500" /> :
-                                       isCommit ? <GitCommit className="w-4 h-4 text-purple-500" /> :
-                                       <FileText className="w-4 h-4 text-amber-500" />}
-                                      
-                                      <a 
-                                        href={ev.evidenceType === 'file' ? ev.fileUrl ?? undefined : (ev.evidenceType === 'link' ? ev.content ?? undefined : undefined)} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className={`text-xs font-bold truncate ${ev.evidenceType === 'observation' || ev.evidenceType === 'text' && !ev.content?.startsWith('http') ? 'cursor-default text-muted-foreground' : 'text-foreground hover:underline'}`}
-                                      >
-                                        {ev.evidenceType === 'file' ? 'Arquivo' : (isCommit && ev.content?.includes('Commit') ? ev.content : (ev.content))}
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-                             )})}
-                          </div>
+                      {act.task && (
+                        <div className="mb-4">
+                           <Badge variant="outline" className="text-[10px] h-5 font-black px-2 uppercase tracking-widest bg-primary/5 text-primary border-primary/20">
+                             Missão: {act.task.name}
+                           </Badge>
                         </div>
                       )}
+
+                      <EvidenceGallery evidences={act.evidences} />
 
                       {isFreelancer && (
                         <div className="mt-6 pt-4 border-t border-dashed">

@@ -20,9 +20,10 @@ type Evidence = {
   previewUrl?: string;
 };
 
-export function LogActivityForm({ projectId }: { projectId: string }) {
+export function LogActivityForm({ projectId, tasks = [] }: { projectId: string, tasks?: any[] }) {
   const { toast } = useToast();
   const [description, setDescription] = useState("");
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [sprint, setSprint] = useState("");
   const [ticket, setTicket] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -97,6 +98,7 @@ export function LogActivityForm({ projectId }: { projectId: string }) {
          formData.append(`evidence_content_${i}`, ev.content);
       }
     });
+    formData.append('task_id', selectedTaskId);
     formData.append('evidence_count', evidences.length.toString());
     
     await createActivity(formData);
@@ -176,9 +178,35 @@ export function LogActivityForm({ projectId }: { projectId: string }) {
           
           <div className="space-y-4">
             <h3 className="text-sm font-semibold uppercase text-muted-foreground tracking-wider">Basic Details</h3>
-            <div className="space-y-2">
-              <Label htmlFor="description">Task Description</Label>
-              <Input id="description" name="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="e.g. Implemented login UI" required className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md" />
+            <div className="space-y-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 space-y-2">
+                  <Label htmlFor="description">Task Description</Label>
+                  <Input id="description" name="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="e.g. Implemented login UI" required className="h-12 border-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all rounded-md" />
+                </div>
+                
+                {tasks.length > 0 && (
+                  <div className="w-full md:w-1/3 space-y-2">
+                    <Label htmlFor="task_id">Vincular a Tarefa (Opcional)</Label>
+                    <select 
+                      name="task_id" 
+                      id="task_id"
+                      value={selectedTaskId}
+                      onChange={(e) => setSelectedTaskId(e.target.value)}
+                      className="flex h-12 w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
+                    >
+                      <option value="">Nenhuma</option>
+                      {tasks
+                        .filter(t => t.status !== 'done')
+                        .map((task) => (
+                          <option key={task.id} value={task.id}>
+                            {task.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                )}
+              </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">

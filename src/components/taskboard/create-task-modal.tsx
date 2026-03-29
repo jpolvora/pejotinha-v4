@@ -126,6 +126,23 @@ export function CreateTaskModal({ projects }: CreateTaskModalProps) {
             </div>
 
             <div className="space-y-3">
+              <Label htmlFor="priority" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">Prioridade</Label>
+              <Select name="priority" defaultValue="medium">
+                <SelectTrigger className="rounded-[20px] border-muted/50 h-14 bg-muted/20 focus:ring-primary/20 transition-all">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-muted/50 shadow-2xl">
+                  <SelectItem value="low" className="rounded-xl py-3">Baixa</SelectItem>
+                  <SelectItem value="medium" className="rounded-xl py-3">Média</SelectItem>
+                  <SelectItem value="high" className="rounded-xl py-3">Alta</SelectItem>
+                  <SelectItem value="urgent" className="rounded-xl py-3">Urgente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-3">
               <Label htmlFor="status" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">Status Inicial</Label>
               <Select name="status" defaultValue="pending">
                 <SelectTrigger className="rounded-[20px] border-muted/50 h-14 bg-muted/20 focus:ring-primary/20 transition-all">
@@ -137,6 +154,16 @@ export function CreateTaskModal({ projects }: CreateTaskModalProps) {
                   <SelectItem value="done" className="rounded-xl py-3">Concluído</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-3">
+              <Label htmlFor="tags" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">Tags (Sprints, Áreas...)</Label>
+              <Input
+                id="tags"
+                name="tags"
+                placeholder="v1.0, sprint-1, ui"
+                className="rounded-[20px] border-muted/50 h-14 bg-muted/20 focus:ring-primary/20 transition-all font-medium"
+              />
             </div>
           </div>
 

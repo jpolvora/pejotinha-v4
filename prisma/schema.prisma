@@ -172,15 +172,17 @@ model Invoice {
 }
 
 model Task {
-  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  projectId   String      @map("project_id") @db.Uuid
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId   String        @map("project_id") @db.Uuid
   name        String
   description String?
-  status      task_status @default(pending)
-  position    Int         @default(0)
-  dueDate     DateTime?   @map("due_date") @db.Timestamptz(6)
-  createdAt   DateTime    @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
-  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status      task_status   @default(pending)
+  priority    task_priority @default(medium)
+  tags        String[]      @default([])
+  position    Int           @default(0)
+  dueDate     DateTime?     @map("due_date") @db.Timestamptz(6)
+  createdAt   DateTime      @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   activities  Activity[]
 
   @@map("tasks")
@@ -263,6 +265,15 @@ enum task_status {
   pending
   doing
   done
+
+  @@schema("public")
+}
+
+enum task_priority {
+  low
+  medium
+  high
+  urgent
 
   @@schema("public")
 }

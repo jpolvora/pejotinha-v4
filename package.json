@@ -16,7 +16,8 @@
     "supabase:link": "supabase link",
     "prepare": "husky",
     "type-check": "tsc --noEmit",
-    "check:all": "npm run lint && npm run type-check && node scripts/check-sanity.mjs"
+    "check:all": "npm run lint && npm run type-check && node scripts/check-sanity.mjs",
+    "from:ghcr": "docker run -it --rm -p 3001:3000 --env-file .env.local --add-host host.docker.internal:host-gateway --name pejotinha-test ghcr.io/jpolvora/pejotinha-v4:latest"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -34,6 +35,7 @@
     "@prisma/client": "^7.6.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
+    "@swc/helpers": "0.5.20",
     "@tailwindcss/postcss": "^4.2.2",
     "ai": "^6.0.137",
     "autoprefixer": "^10.4.27",

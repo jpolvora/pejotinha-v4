@@ -3,6 +3,8 @@ import { Topbar } from "@/components/dashboard/topbar"
 import { createClient } from "@/lib/supabase/server"
 import prisma from "@/lib/prisma"
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: {

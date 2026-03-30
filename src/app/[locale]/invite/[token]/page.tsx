@@ -6,6 +6,8 @@ import { CheckCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function InvitePage(props: { params: Promise<{ token: string }> }) {
   const params = await props.params;
   const invitation = await prisma.invitation.findUnique({

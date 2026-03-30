@@ -1,8 +1,6 @@
 "use client"
 
-import * as React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, Link } from "@/i18n/routing"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
@@ -24,6 +22,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { useTranslations } from "next-intl"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   hasClientProjects?: boolean;
@@ -31,21 +30,22 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function Sidebar({ className, hasClientProjects, userRole }: SidebarProps) {
+  const t = useTranslations('Common')
   const pathname = usePathname()
 
   const routes = [
-    { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard", active: pathname === "/dashboard" },
-    { label: "Timeline", icon: FileText, href: "/timeline", active: pathname.includes("/timeline") },
-    { label: "Taskboard", icon: FolderKanban, href: "/taskboard", active: pathname.includes("/taskboard") },
-    { label: "Clientes", icon: Users, href: "/clients", active: pathname.includes("/clients"), hide: userRole === 'client' },
-    { label: "Projetos", icon: FolderKanban, href: "/projects", active: pathname.includes("/projects") },
-    { label: "Área do Cliente", icon: Users, href: "/client", active: pathname === "/client" },
-    { label: "Calendário", icon: Calendar, href: "/calendar", active: pathname.includes("/calendar"), hide: userRole === 'client' },
-    { label: "Cobrança", icon: Receipt, href: "/billing", active: pathname.includes("/billing"), hide: userRole === 'client' },
-    { label: "Financeiro", icon: Receipt, href: "/expenses", active: pathname.includes("/expenses"), hide: userRole === 'client' },
-    { label: "Relatórios", icon: PieChart, href: "/reports", active: pathname.includes("/reports") },
-    { label: "Meu Perfil", icon: User, href: "/profile", active: pathname === "/profile" },
-    { label: "Configurações", icon: Settings, href: "/settings", active: pathname === "/settings" },
+    { label: t("dashboard"), icon: LayoutDashboard, href: "/dashboard", active: pathname === "/dashboard" },
+    { label: t("timeline"), icon: FileText, href: "/timeline", active: pathname.includes("/timeline") },
+    { label: t("taskboard"), icon: FolderKanban, href: "/taskboard", active: pathname.includes("/taskboard") },
+    { label: t("clients"), icon: Users, href: "/clients", active: pathname.includes("/clients"), hide: userRole === 'client' },
+    { label: t("projects"), icon: FolderKanban, href: "/projects", active: pathname.includes("/projects") },
+    { label: t("clientArea"), icon: Users, href: "/client", active: pathname === "/client" },
+    { label: t("calendar"), icon: Calendar, href: "/calendar", active: pathname.includes("/calendar"), hide: userRole === 'client' },
+    { label: t("billing"), icon: Receipt, href: "/billing", active: pathname.includes("/billing"), hide: userRole === 'client' },
+    { label: t("finance"), icon: Receipt, href: "/expenses", active: pathname.includes("/expenses"), hide: userRole === 'client' },
+    { label: t("reports"), icon: PieChart, href: "/reports", active: pathname.includes("/reports") },
+    { label: t("profile"), icon: User, href: "/profile", active: pathname === "/profile" },
+    { label: t("settings"), icon: Settings, href: "/settings", active: pathname === "/settings" },
   ].filter(r => !(r as any).hide)
 
   const teams: { name: string; initial: string; href: string }[] = []
@@ -65,7 +65,7 @@ export function Sidebar({ className, hasClientProjects, userRole }: SidebarProps
             {routes.map((route) => (
               <Link
                 key={route.label}
-                href={route.href}
+                href={route.href as any}
                 className={cn(
                   "group flex items-center gap-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   route.active 
@@ -87,7 +87,7 @@ export function Sidebar({ className, hasClientProjects, userRole }: SidebarProps
           {teams.length > 0 && (
             <div className="space-y-1">
               <div className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                Your teams
+                {t('yourTeams')}
               </div>
               {teams.map((team) => (
                 <Link

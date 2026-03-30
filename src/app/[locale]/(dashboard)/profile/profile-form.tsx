@@ -7,7 +7,7 @@ import {
   updatePassword, 
   deleteAccount 
 } from '@/actions/user'
-import { signOut } from '@/app/login/actions'
+import { signOut } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

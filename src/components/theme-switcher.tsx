@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useTheme } from "next-themes"
-import { useThemeColor } from "@/components/theme-provider"
+import { useTheme } from "@/components/theme-provider"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
@@ -17,8 +16,7 @@ import {
 import { Moon, Sun, Palette, Check } from "lucide-react"
 
 export function ThemeSwitcher() {
-  const { theme, setTheme } = useTheme()
-  const { themeColor, setThemeColor } = useThemeColor()
+  const { theme, setTheme, themeColor, setThemeColor } = useTheme()
 
   return (
     <DropdownMenu>

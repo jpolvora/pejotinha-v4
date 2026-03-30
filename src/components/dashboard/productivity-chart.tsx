@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Bar,
   BarChart,
@@ -20,6 +20,12 @@ interface ProductivityChartProps {
 }
 
 export function ProductivityChart({ data }: ProductivityChartProps) {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Aggregate data for the last 7 days
   const chartData = useMemo(() => {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -42,6 +48,14 @@ export function ProductivityChart({ data }: ProductivityChartProps) {
 
     return last7Days;
   }, [data]);
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-[350px] flex items-center justify-center bg-accent/5 rounded-xl animate-pulse">
+        <div className="h-4 w-32 bg-muted/20 rounded" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-[350px]">

@@ -10,13 +10,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import { Settings, LogOut, User } from "lucide-react"
-import { signOut } from "@/app/login/actions"
-import Link from "next/link"
+import { signOut } from "@/actions/auth"
+import { Link } from "@/i18n/routing"
 import { useTransition } from "react"
+import { useTranslations } from "next-intl"
 
 export function UserDropdown() {
+  const t = useTranslations('UserDropdown')
   const [isPending, startTransition] = useTransition()
 
   const handleSignOut = () => {
@@ -35,37 +36,37 @@ export function UserDropdown() {
             </AvatarFallback>
           </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end">
+      <DropdownMenuContent className="w-56 rounded-xl border-white/10 bg-black/80 backdrop-blur-xl" align="end">
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="font-normal">
+          <DropdownMenuLabel className="font-normal p-3">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">Minha Conta</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                Configure seu perfil
+              <p className="text-sm font-medium leading-none text-white">{t('myAccount')}</p>
+              <p className="text-xs leading-none text-white/50">
+                {t('configureProfile')}
               </p>
             </div>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="bg-white/10" />
           <DropdownMenuItem className="p-0">
-            <Link href="/profile" className="flex w-full items-center gap-2 px-1.5 py-1 cursor-pointer">
+            <Link href="/profile" className="flex w-full items-center gap-2 px-3 py-2 cursor-pointer text-white/70 hover:text-white transition-colors hover:bg-white/5">
               <User className="h-4 w-4" />
-              <span>Meu Perfil</span>
+              <span>{t('myProfile')}</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem className="p-0">
-            <Link href="/settings" className="flex w-full items-center gap-2 px-1.5 py-1 cursor-pointer">
+            <Link href="/settings" className="flex w-full items-center gap-2 px-3 py-2 cursor-pointer text-white/70 hover:text-white transition-colors hover:bg-white/5">
               <Settings className="h-4 w-4" />
-              <span>Configurações</span>
+              <span>{t('settings')}</span>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="bg-white/10" />
           <DropdownMenuItem 
             onClick={handleSignOut}
             disabled={isPending}
-            className="text-destructive focus:text-destructive flex items-center gap-2 cursor-pointer"
+            className="text-destructive/80 focus:text-destructive flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-destructive/10 transition-colors"
           >
             <LogOut className="h-4 w-4" />
-            <span>{isPending ? "Saindo..." : "Sair"}</span>
+            <span>{isPending ? t('signingOut') : t('logout')}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

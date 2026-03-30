@@ -4,10 +4,12 @@ import { getDashboardStats, getIntegratedTimeline } from "@/actions/dashboard"
 import { formatDateTime, formatDuration } from "@/lib/locale"
 import { Badge } from "@/components/ui/badge"
 
-import Link from "next/link"
+import { Link } from "@/i18n/routing"
 import { OnboardingBanner } from "@/components/dashboard/onboarding-banner"
+import { getTranslations } from "next-intl/server"
 
 export default async function DashboardPage() {
+  const t = await getTranslations('Dashboard')
   const stats = await getDashboardStats();
   const timeline = await getIntegratedTimeline();
 
@@ -26,22 +28,22 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in zoom-in duration-500">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Dashboard</h1>
-        <p className="text-muted-foreground mt-1 text-sm font-medium">Bem-vindo de volta! Aqui está seu resumo de produtividade e histórico.</p>
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">{t('title')}</h1>
+        <p className="text-muted-foreground mt-1 text-sm font-medium">{t('welcomeBack')}</p>
       </div>
 
       {showOnboarding && <OnboardingBanner />}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[
-          { title: "Total de Horas", icon: Timer, value: formatDuration(safeStats.totalMinutes), color: "text-blue-500", href: "/timeline" },
-          { title: "Projetos Ativos", icon: Briefcase, value: safeStats.activeProjects.toString(), color: "text-emerald-500", href: "/projects" },
-          { title: "Clientes Ativos", icon: Users, value: safeStats.activeClients.toString(), color: "text-violet-500", href: "/clients" },
-          { title: "Evidências", icon: FileText, value: safeStats.evidencesUploaded.toString(), color: "text-amber-500", href: "/timeline" },
+          { title: t("totalHours"), icon: Timer, value: formatDuration(safeStats.totalMinutes), color: "text-blue-500", href: "/timeline" },
+          { title: t("activeProjects"), icon: Briefcase, value: safeStats.activeProjects.toString(), color: "text-emerald-500", href: "/projects" },
+          { title: t("activeClients"), icon: Users, value: safeStats.activeClients.toString(), color: "text-violet-500", href: "/clients" },
+          { title: t("evidencesCount"), icon: FileText, value: safeStats.evidencesUploaded.toString(), color: "text-amber-500", href: "/timeline" },
         ].map((stat, i) => (
           <Link 
             key={i} 
-            href={stat.href}
+            href={stat.href as any}
             className="rounded-2xl border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm hover:shadow-lg transition-all hover:bg-accent/10 cursor-pointer relative overflow-hidden group border-muted/50 block"
           >
             <div className={`absolute -top-6 -right-6 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-500 ${stat.color}`}>
@@ -61,10 +63,10 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 rounded-2xl border bg-card/40 backdrop-blur-md shadow-sm p-6 border-muted/50">
+        <div className="lg:col-span-2 rounded-2xl border bg-card/40 backdrop-blur-md shadow-sm p-6 border-muted/50 min-h-[450px]">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="font-bold text-xl tracking-tight">Análise de Produtividade</h3>
-            <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-widest bg-primary/5 text-primary border-primary/20">Últimos 7 dias</Badge>
+            <h3 className="font-bold text-xl tracking-tight">{t('productivityAnalysis')}</h3>
+            <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-widest bg-primary/5 text-primary border-primary/20">{t('last7days')}</Badge>
           </div>
           <ProductivityChart data={safeStats.weeklyChartData} />
         </div>
@@ -73,17 +75,17 @@ export default async function DashboardPage() {
           <div className="p-6 pb-4 border-b border-muted/50 bg-accent/5">
             <h3 className="font-bold text-xl tracking-tight flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
-              Timeline Pro
+              {t('timelinePro')}
             </h3>
-            <p className="text-xs text-muted-foreground mt-1 font-medium italic">Rastreio em tempo real de atividades e commits</p>
+            <p className="text-xs text-muted-foreground mt-1 font-medium italic">{t('realTimeTracking')}</p>
           </div>
           
           <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
             {timeline.length === 0 ? (
                <div className="flex flex-col items-center justify-center h-full text-center space-y-2 opacity-40">
                 <Activity className="w-12 h-12 mb-2" />
-                <p className="text-sm font-medium">Silêncio absoluto por aqui...</p>
-                <p className="text-xs">Registre uma atividade para ver a mágica.</p>
+                <p className="text-sm font-medium">{t('absoluteSilence')}</p>
+                <p className="text-xs">{t('logActivityMagic')}</p>
                </div>
             ) : (
                 <div className="relative space-y-10">
@@ -161,14 +163,14 @@ export default async function DashboardPage() {
                               {(item as any).evidenceCount > 0 && (
                                 <div className="flex items-center gap-1 text-[10px] font-bold text-amber-600 opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
                                   <Image className="w-3 h-4" />
-                                  {(item as any).evidenceCount} {(item as any).evidenceCount === 1 ? 'Evidência' : 'Evidências'}
+                                  {(item as any).evidenceCount} {(item as any).evidenceCount === 1 ? t('evidence') : t('evidences')}
                                 </div>
                               )}
 
                               {isGit && (
                                 <div className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 opacity-70">
                                   <ExternalLink className="w-3 h-3" />
-                                  Git Commit
+                                  {t('gitCommit')}
                                 </div>
                               )}
                             </div>

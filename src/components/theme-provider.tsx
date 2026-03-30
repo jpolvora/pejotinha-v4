@@ -1,66 +1,97 @@
 "use client"
 
-import { ThemeProvider as NextThemesProvider } from "next-themes"
 import * as React from "react"
 
-import type { ThemeProviderProps } from "next-themes"
+export type Theme = "dark" | "light" | "system"
+export type ThemeColor = "theme-blue" | "theme-orange" | "theme-purple" | "theme-green" | "theme-red" | "theme-zinc"
 
-type ThemeColor = "theme-blue" | "theme-orange" | "theme-purple" | "theme-green" | "theme-red" | "theme-zinc"
-
-interface ThemeColorContextType {
+interface ThemeContextType {
+  theme: Theme
+  setTheme: (theme: Theme) => void
   themeColor: ThemeColor
   setThemeColor: (color: ThemeColor) => void
 }
 
-export const ThemeColorContext = React.createContext<ThemeColorContextType | undefined>(undefined)
+export const ThemeContext = React.createContext<ThemeContextType | undefined>(undefined)
 
-export function useThemeColor() {
-  const context = React.useContext(ThemeColorContext)
-  if (!context) {
-    throw new Error("useThemeColor must be used within a ThemeColorProvider")
-  }
+export function useTheme() {
+  const context = React.useContext(ThemeContext)
+  if (!context) throw new Error("useTheme must be used within a ThemeProvider")
   return context
 }
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  const [mounted, setMounted] = React.useState(false)
-  const [themeColor, setThemeColor] = React.useState<ThemeColor>("theme-blue")
+// Re-export for compatibility
+export const useThemeColor = useTheme
+
+interface ThemeProviderProps {
+  children: React.ReactNode
+  defaultTheme?: Theme
+  attribute?: string
+  enableSystem?: boolean
+}
+
+export function ThemeProvider({ 
+  children, 
+  defaultTheme = "dark",
+  enableSystem = true 
+}: ThemeProviderProps) {
+  const [theme, setThemeState] = React.useState<Theme>(defaultTheme)
+  const [themeColor, setThemeColorState] = React.useState<ThemeColor>("theme-blue")
 
   React.useEffect(() => {
-    setMounted(true)
+    // Initial sync from localStorage
+    const savedTheme = localStorage.getItem("theme") as Theme
     const savedColor = localStorage.getItem("themeColor") as ThemeColor
-    if (savedColor) {
-      setThemeColor(savedColor)
-      document.documentElement.classList.add(savedColor)
-    } else {
-      document.documentElement.classList.add("theme-blue")
-    }
-  }, [])
+    
+    if (savedTheme) setThemeState(savedTheme)
+    if (savedColor) setThemeColorState(savedColor)
 
-  const handleSetThemeColor = (color: ThemeColor) => {
-    const root = document.documentElement
-    // Remove all possible theme classes
-    root.classList.remove(
-      "theme-blue", 
-      "theme-orange", 
-      "theme-purple", 
-      "theme-green", 
-      "theme-red", 
-      "theme-zinc"
-    )
-    root.classList.add(color)
-    localStorage.setItem("themeColor", color)
-    setThemeColor(color)
+    // Apply classes
+    const root = window.document.documentElement
+    root.classList.remove("light", "dark")
+    
+    if (savedTheme === "system" && enableSystem) {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      root.classList.add(systemTheme)
+    } else {
+      root.classList.add(savedTheme || defaultTheme)
+    }
+
+    if (savedColor) {
+      const colorClasses = ["theme-blue", "theme-orange", "theme-purple", "theme-green", "theme-red", "theme-zinc"]
+      colorClasses.forEach(c => root.classList.remove(c))
+      root.classList.add(savedColor)
+    }
+  }, [defaultTheme, enableSystem])
+
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme)
+    localStorage.setItem("theme", newTheme)
+    
+    const root = window.document.documentElement
+    root.classList.remove("light", "dark")
+    
+    if (newTheme === "system" && enableSystem) {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      root.classList.add(systemTheme)
+    } else {
+      root.classList.add(newTheme)
+    }
   }
 
-  // To avoid hydration mismatch and script tag warnings in some Next.js/React versions,
-  // we can ensure the inner content only renders when mounted, 
-  // but NextThemesProvider itself should render for the script to work.
+  const setThemeColor = (newColor: ThemeColor) => {
+    setThemeColorState(newColor)
+    localStorage.setItem("themeColor", newColor)
+    
+    const root = window.document.documentElement
+    const colorClasses = ["theme-blue", "theme-orange", "theme-purple", "theme-green", "theme-red", "theme-zinc"]
+    colorClasses.forEach(c => root.classList.remove(c))
+    root.classList.add(newColor)
+  }
+
   return (
-    <ThemeColorContext.Provider value={{ themeColor, setThemeColor: handleSetThemeColor }}>
-      <NextThemesProvider {...props}>
-        {children}
-      </NextThemesProvider>
-    </ThemeColorContext.Provider>
+    <ThemeContext.Provider value={{ theme, setTheme, themeColor, setThemeColor }}>
+      {children}
+    </ThemeContext.Provider>
   )
 }

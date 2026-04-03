@@ -48,14 +48,14 @@ export function PersonalEventModal() {
         }
       />
       <SheetContent className="sm:max-w-md overflow-y-auto w-full">
-        <SheetHeader>
+        <SheetHeader className="px-4 pt-6 sm:px-6">
           <SheetTitle className="text-2xl">{t('logEvent')}</SheetTitle>
           <SheetDescription className="text-base">
             {t('description')}
           </SheetDescription>
         </SheetHeader>
         
-        <form onSubmit={onSubmit} className="space-y-6 mt-8">
+        <form onSubmit={onSubmit} className="space-y-6 mt-2 px-4 pb-6 sm:px-6">
           <div className="space-y-2">
             <Label htmlFor="title" className="text-foreground">{t('eventTitle')}</Label>
             <Input id="title" name="title" required placeholder={t('eventPlaceholder')} className="bg-muted/30" />

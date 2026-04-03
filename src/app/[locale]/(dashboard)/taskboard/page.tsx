@@ -18,7 +18,7 @@ export default async function TaskboardPage() {
 
   return (
     <div className="flex flex-col h-full space-y-10 animate-in fade-in zoom-in duration-500 max-w-[1600px] mx-auto pb-10">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 px-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
              <div className="p-2.5 rounded-2xl bg-primary shadow-lg shadow-primary/20 text-white">
@@ -39,7 +39,7 @@ export default async function TaskboardPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden px-4">
+      <div className="flex-1 overflow-hidden">
         <KanbanBoard initialTasks={tasks} />
       </div>
 

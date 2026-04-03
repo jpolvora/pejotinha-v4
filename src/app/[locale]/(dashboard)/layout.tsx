@@ -39,7 +39,7 @@ export default async function DashboardLayout({
           <Topbar />
         </div>
         <main className="flex-1 p-6 lg:p-10 print:p-0">
-          <div className="mx-auto max-w-7xl h-full rounded-2xl border border-dashed border-border/60 bg-muted/5 print:border-none print:shadow-none print:bg-white overflow-y-auto">
+          <div className="screen-container mx-auto max-w-7xl h-full rounded-2xl border border-dashed border-border/60 bg-muted/5 print:border-none print:shadow-none print:bg-white overflow-y-auto">
             {children}
           </div>
         </main>

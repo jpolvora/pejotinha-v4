@@ -51,12 +51,15 @@ export function LogActivityForm({
     previewUrl: ev.fileUrl || undefined,
     createdAt: ev.createdAt ? new Date(ev.createdAt).toISOString().slice(0, 16) : undefined
   })));
+  const [isPaid, setIsPaid] = useState(activity?.isPaid || false);
+  const [isPrivate, setIsPrivate] = useState(activity?.isPrivate || false);
   const [deletedEvidenceIds, setDeletedEvidenceIds] = useState<string[]>([]);
 
   const linkedTask = tasks.find(t => t.id === selectedTaskId);
 
   const [aiText, setAiText] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Automatically calculate duration
   useEffect(() => {
@@ -140,49 +143,66 @@ export function LogActivityForm({
 
   const router = useRouter();
 
-  const actionWithData = async (formData: FormData) => {
-    const newEvidences = evidences.filter(ev => ev.file || (ev.content && !initialEvidences.some(ie => ie.id === ev.id)));
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
     
-    newEvidences.forEach((ev, i) => {
-      formData.append(`evidence_type_${i}`, ev.type);
-      if (ev.type === 'file' && ev.file) {
-         formData.append(`evidence_file_${i}`, ev.file);
-      } else if (ev.content) {
-         formData.append(`evidence_content_${i}`, ev.content);
-         if (ev.createdAt) {
-           formData.append(`evidence_created_at_${i}`, ev.createdAt);
-         }
-      }
-    });
+    try {
+      const formData = new FormData(e.currentTarget);
+      
+      // 1. Filter only new evidences (files or new content)
+      const newEvidences = evidences.filter(ev => ev.file || (ev.content && !initialEvidences.some(ie => ie.id === ev.id)));
 
-    formData.append('task_id', selectedTaskId || "");
-    formData.append('evidence_count', newEvidences.length.toString());
-    
-    // Checkboxes are appended only if checked in standard form submission
-    // But we append them explicitly to be safe and match the server expectation of "true"/"false"
-    const isPrivate = (document.getElementById('is_private') as HTMLInputElement)?.checked;
-    const isPaid = (document.getElementById('is_paid') as HTMLInputElement)?.checked;
-    formData.append('is_private', isPrivate ? 'true' : 'false');
-    formData.append('is_paid', isPaid ? 'true' : 'false');
-    
-    formData.append('deleted_evidence_ids', JSON.stringify(deletedEvidenceIds));
-    
-    if (isEditing) {
-      const result = await updateActivity(activity.id, formData);
-      if (result.success) {
-        toast({ title: "Atividade atualizada!", description: "Suas alterações foram salvas." });
-        router.push(`/projects/${projectId}`);
-        router.refresh();
+      // 2. Clear then Set structured fields to avoid duplicates from form inputs
+      formData.delete('is_private');
+      formData.delete('is_paid');
+      formData.delete('task_id');
+      formData.delete('evidence_count');
+      
+      formData.set('project_id', projectId);
+      formData.set('task_id', selectedTaskId || "");
+      formData.set('is_private', isPrivate ? 'true' : 'false');
+      formData.set('is_paid', isPaid ? 'true' : 'false');
+      formData.set('evidence_count', newEvidences.length.toString());
+      formData.set('deleted_evidence_ids', JSON.stringify(deletedEvidenceIds));
+
+      // 3. Append evidences with unique keys and guaranteed filenames
+      newEvidences.forEach((ev, i) => {
+        formData.set(`evidence_type_${i}`, ev.type);
+        if (ev.type === 'file' && ev.file) {
+           const fileName = ev.file.name || `attachment-${i}-${Date.now()}`;
+           formData.append(`evidence_file_${i}`, ev.file, fileName);
+        } else if (ev.content) {
+           formData.set(`evidence_content_${i}`, ev.content);
+           if (ev.createdAt) {
+             formData.set(`evidence_created_at_${i}`, ev.createdAt);
+           }
+        }
+      });
+
+      if (isEditing) {
+        const result = await updateActivity(activity.id, formData);
+        if (result.success) {
+          toast({ title: "Atividade atualizada!", description: "Suas alterações foram salvas." });
+          router.push(`/projects/${projectId}`);
+          router.refresh();
+        } else {
+          toast({ title: "Erro ao atualizar", description: result.error, variant: "destructive" });
+        }
       } else {
-        toast({ title: "Erro ao atualizar", description: result.error, variant: "destructive" });
+        const result = await createActivity(formData);
+        if (result.success) {
+          toast({ title: "Atividade registrada!", description: "Sua produção foi documentada." });
+          router.push(`/projects/${projectId}`);
+          router.refresh();
+        } else {
+          toast({ title: "Erro ao criar", description: result.error, variant: "destructive" });
+        }
       }
-    } else {
-      const result = await createActivity(formData);
-      if (result.success) {
-        toast({ title: "Atividade registrada!", description: "Sua produção foi documentada." });
-      } else {
-        toast({ title: "Erro ao criar", description: result.error, variant: "destructive" });
-      }
+    } catch (error: any) {
+      toast({ title: "Erro no formulário", description: error.message || "Erro desconhecido ocorrido.", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -211,8 +231,8 @@ export function LogActivityForm({
   };
 
   return (
-    <Card className="shadow-none border-0 bg-transparent text-left" onPaste={handlePaste}>
-      <CardContent className="p-0 space-y-12">
+    <div className="text-left w-full" onPaste={handlePaste}>
+      <div className="space-y-12">
         {!isEditing && (
           <div className="space-y-4 bg-primary/5 p-6 rounded-3xl border border-primary/20 shadow-sm">
             <div className="flex items-center gap-2 mb-1 text-primary">
@@ -243,7 +263,7 @@ export function LogActivityForm({
           </div>
         )}
         
-        <form action={actionWithData} className="space-y-12">
+        <form onSubmit={handleSubmit} className="space-y-12">
           <input type="hidden" name="project_id" value={projectId} />
 
           {/* Vínculo de Tarefa */}
@@ -365,7 +385,8 @@ export function LogActivityForm({
                   type="checkbox" 
                   id="is_paid" 
                   name="is_paid" 
-                  defaultChecked={activity?.isPaid || false}
+                  checked={isPaid}
+                  onChange={(e) => setIsPaid(e.target.checked)}
                   className="w-6 h-6 accent-green-600 cursor-pointer rounded-lg" 
                 />
                 <Label htmlFor="is_paid" className="cursor-pointer font-black uppercase tracking-widest text-[11px] text-green-600 dark:text-green-400">
@@ -378,7 +399,8 @@ export function LogActivityForm({
                   type="checkbox" 
                   id="is_private" 
                   name="is_private" 
-                  defaultChecked={activity?.isPrivate || false}
+                  checked={isPrivate}
+                  onChange={(e) => setIsPrivate(e.target.checked)}
                   className="w-6 h-6 accent-amber-600 cursor-pointer rounded-lg" 
                 />
                 <Label htmlFor="is_private" className="cursor-pointer font-black uppercase tracking-widest text-[11px] text-amber-600 dark:text-amber-400">
@@ -615,13 +637,16 @@ export function LogActivityForm({
           </div>
 
           <div className="pt-8 mt-4 flex justify-end gap-6">
-            <SubmitButton 
-              label={isEditing ? "Atualizar Atividade" : "Log Activity & Evidences"} 
+            <Button 
+              type="submit"
+              disabled={isSubmitting}
               className="h-14 px-10 rounded-2xl font-black uppercase tracking-tighter text-lg shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all w-full sm:w-auto"
-            />
+            >
+              {isSubmitting ? (isEditing ? "Atualizando..." : "Salvando...") : (isEditing ? "Atualizar Atividade" : "Log Activity & Evidences")}
+            </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

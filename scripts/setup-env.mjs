@@ -69,6 +69,7 @@ if (apiUrl && anonKey) {
   // Preencher credenciais do Supabase
   updateEnv('NEXT_PUBLIC_SUPABASE_URL', apiUrl);
   updateEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', anonKey);
+  updateEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY', anonKey);
   updateEnv('SUPABASE_SERVICE_ROLE_KEY', serviceKey);
   updateEnv('DATABASE_URL', dbUrl);
   updateEnv('DIRECT_URL', dbUrl); // No local, costumam ser iguais
@@ -96,7 +97,7 @@ if (apiUrl && anonKey) {
   // Salvar
   envContent = envContent.trim() + '\n';
   writeFileSync(envPath, envContent);
-  
+
   console.log(`\n✅ Arquivo ${envPath} atualizado com sucesso!`);
   console.log(`🔗 URL: ${apiUrl}`);
   console.log(`🔑 Anon Key: ${anonKey.substring(0, 15)}...`);

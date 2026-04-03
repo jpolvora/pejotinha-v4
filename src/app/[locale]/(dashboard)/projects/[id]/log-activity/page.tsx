@@ -28,11 +28,9 @@ export default async function LogActivityPage(props: { params: Promise<{ id: str
         </div>
       </div>
 
-      <Card className="shadow-none border-0 rounded-[32px] overflow-hidden bg-transparent">
-        <div className="p-0">
-          <LogActivityForm projectId={project.id} tasks={tasks} />
-        </div>
-      </Card>
+      <div className="rounded-[32px] overflow-hidden">
+        <LogActivityForm projectId={project.id} tasks={tasks} />
+      </div>
     </div>
   );
 }

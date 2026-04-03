@@ -95,7 +95,26 @@ async function logCommit() {
 logCommit();
 ```
 
+---
+
+## 🚀 GitHub Actions CI/CD Pipeline
+
+O Pejotinha-v4 possui um pipeline automatizado para builds e releases em ambiente Windows (via GitHub Actions).
+
+### 🔄 Fluxo de Release
+- **Trigger**: O pipeline é ativado automaticamente em todo `push` para a branch `main`.
+- **Versioning**: O sistema utiliza o package versioning automático para gerar uma nova tag de release.
+- **Artifacts**: Cada build gera um instalador/binário `.msi` ou executável (quando configurado) que é enviado para os GitHub Releases.
+
+### 📋 Próximos Passos (Manual do Desenvolvedor)
+Para que o pipeline funcione corretamente, configure estes `Secrets` no seu repositório:
+1. `GH_TOKEN`: Token com permissões de escrita em Releases.
+2. `CERTIFICATE_P12`: (Opcional) Certificado para assinatura de código.
+
+---
+
 ## 🛡️ Security
 
 - Keep your `webhookSecret` private. It acts as your API Key.
 - Use HTTPS in production for all API calls.
+- Avoid hardcoding API credentials in any pull request.

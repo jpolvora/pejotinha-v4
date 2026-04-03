@@ -17,7 +17,7 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 - **Banco de Dados:** PostgreSQL via Prisma 7 (Adapter-based)
 - **Storage/Auth:** Supabase Self-hosted
 - **IA:** Vercel AI SDK (Anthropic/Google Gemini/OpenAI)
-- **Infra:** Docker & Docker Compose (Coolify-ready)
+- **Infra:** Docker & Docker Compose (Coolify-ready) + GitHub Actions CI/CD
 
 ---
 
@@ -50,10 +50,10 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 
 ### 4. Integrações & Ajustes
 - [x] **Telegram Integration:** Configuração de bot token para comandos remotos.
-- [x] **Dashboard:** Resumo de horas, faturamento e atividades recentes.
-- [x] **Reporting & Advanced Intelligence:** Relatórios detalhados com IA Summarization.
-- [x] **Client Portal (Hierarchical Access):** Sistema de convites com papéis granularizados (**Owner** e **Supervisor**) via `ProjectAccess`.
-- [x] **Proofs UI Pro:** Galeria de evidências com preview premium (Imagens/Vídeos) e links diretos.
+- [x] **Relatórios & IA Summary:** Geração de resumos inteligentes baseados nas atividades registradas.
+- [x] **Internationalization (i18n):** Suporte total a PT-BR e EN com persistência e troca dinâmica.
+- [x] **Standardized UI System:** Implementação do layout `.screen-container` e `<PageHeader />` em todas as telas para consistência visual.
+- [x] **Theme Switcher:** Seletor de tema Dark/Light com correção de contraste para todos os componentes (incluindo Selects e Modais).
 
 ---
 
@@ -66,10 +66,9 @@ O Pejotinha é um SaaS multiusuário para freelancers que vai além do simples t
 - [x] **Timeline Visual:** Componente unificado de atividades e eventos pessoais no Dashboard.
 - [x] **Sistema de Toasts Premium:** Padronizar feedbacks visuais com Toasts customizados.
 
-- [ ] **Exportação PDF/Excel Avançada:** Para relatórios fiscais e faturas brutas.
-- [ ] **Client Invites & Portal UI:** Sistema de convites por e-mail e aceitação via token (UI Proativa).
+- [x] **Dark/Light Mode Sync:** Auto-detecção de sistema e toggle persistente premium.
+- [ ] **Exportação PDF/Excel Avançada:** Para relatórios fiscais e faturas brutas (JS-PDF integrado).
 - [ ] **Global Search:** Busca unificada em clientes, projetos, tarefas e atividades (IA-powered).
-- [ ] **Dark/Light Mode Sync:** Auto-detecção de sistema e toggle persistente premium.
 
 ---
 

@@ -7,7 +7,19 @@ const rl = createInterface({
   output: process.stdout
 });
 
-const question = (text) => new Promise((resolve) => rl.question(text, resolve));
+const question = (text, defaultValue = '') => new Promise((resolve) => {
+  const prompt = defaultValue ? `${text} [${defaultValue}]: ` : text;
+  rl.question(prompt, (answer) => {
+    resolve(answer.trim() || defaultValue);
+  });
+});
+
+const getEnvVar = (file, key) => {
+  if (!existsSync(file)) return '';
+  const content = readFileSync(file, 'utf8');
+  const match = content.match(new RegExp(`^${key}=(.*)`, 'm'));
+  return match ? match[1].trim() : '';
+};
 
 async function main() {
   console.clear();
@@ -56,20 +68,48 @@ async function main() {
       console.log('🛠️  Preparando arquivo .env.cloud...');
       execSync('node scripts/setup-cloud.mjs', { stdio: 'inherit' });
 
-      console.log('\n\x1b[32m%s\x1b[0m', '✅ Arquivo .env.cloud gerado com sucesso!');
+      console.log('\n🔑 \x1b[36mCredenciais do Dashboard do Supabase\x1b[0m');
+      console.log('Você pode encontrá-las em: Project Settings -> API');
+      const envPath = '.env.cloud';
+      const existingAnon = getEnvVar(envPath, 'NEXT_PUBLIC_SUPABASE_ANON_KEY');
+      const existingService = getEnvVar(envPath, 'SUPABASE_SERVICE_ROLE_KEY');
+      const existingPublishable = getEnvVar(envPath, 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY');
+      const existingPass = getEnvVar(envPath, 'POSTGRES_PASSWORD');
+
+      const anonKey = await question('NEXT_PUBLIC_SUPABASE_ANON_KEY', existingAnon);
+      const serviceRoleKey = await question('SUPABASE_SERVICE_ROLE_KEY', existingService);
+      const publishableKey = await question('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY', existingPublishable);
+      const dbPassword = await question('Senha do Database (POSTGRES_PASSWORD)', existingPass);
+
+      let envContent = readFileSync(envPath, 'utf8');
+
+      const updateVal = (key, value) => {
+        const regex = new RegExp(`^${key}=.*`, 'm');
+        if (regex.test(envContent)) {
+          envContent = envContent.replace(regex, `${key}=${value}`);
+        } else {
+          envContent += `\n${key}=${value}`;
+        }
+      };
+
+      updateVal('NEXT_PUBLIC_SUPABASE_ANON_KEY', anonKey);
+      updateVal('SUPABASE_SERVICE_ROLE_KEY', serviceRoleKey);
+      updateVal('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY', publishableKey);
+      updateVal('POSTGRES_PASSWORD', dbPassword);
+      
+      // Update DB URLs with password
+      envContent = envContent.replace(/\[YOUR_PASSWORD\]/g, encodeURIComponent(dbPassword));
+
+      writeFileSync(envPath, envContent);
+
+      console.log('\n\x1b[32m%s\x1b[0m', '✅ Arquivo .env.cloud configurado com sucesso!');
       console.log('--------------------------------------------------');
-      console.log('\x1b[31m%s\x1b[0m', '⚠️  AÇÃO REQUERIDA:');
-      console.log('1. Abra o arquivo .env.cloud');
-      console.log('2. Preencha as credenciais reais do seu Dashboard do Supabase');
-      console.log('3. Após preencher, execute:');
-      console.log('   \x1b[34m%s\x1b[0m', 'npm run db:push');
-      console.log('4. Depois inicie o app com:');
-      console.log('   \x1b[34m%s\x1b[0m', 'npm run dev');
+      console.log('Próximo passo: \x1b[34m%s\x1b[0m', 'npm run db:push');
       console.log('--------------------------------------------------');
     } catch (error) {
-      console.error('\n\x1b[31m%s\x1b[0m', '❌ Falha ao inicializar o setup de nuvem.');
+      console.error('\n\x1b[31m%s\x1b[0m', '❌ Falha ao inicializar o setup de nuvem: ' + error.message);
     }
-    } 
+  } 
     else {
       console.log('\x1b[31m%s\x1b[0m', 'Opção inválida. Setup encerrado.');
       rl.close();
@@ -85,10 +125,12 @@ async function main() {
     const googleChoice = await question('Escolha uma opção (1 ou 2): ');
 
     if (googleChoice === '1') {
-      const clientId = await question('Google Client ID: ');
-      const clientSecret = await question('Google Client Secret: ');
-      
       const envFile = answer === '1' ? '.env' : '.env.cloud';
+      const existingClientId = getEnvVar(envFile, 'GOOGLE_CLIENT_ID');
+      const existingClientSecret = getEnvVar(envFile, 'GOOGLE_CLIENT_SECRET');
+
+      const clientId = await question('Google Client ID', existingClientId);
+      const clientSecret = await question('Google Client Secret', existingClientSecret);
       const existingEnv = readFileSync(envFile, 'utf8');
       
       // Update or Append Google Auth Vars

@@ -8,7 +8,8 @@ Pejotinha é uma plataforma SaaS multiusuário voltada para freelancers que dese
 
 - **Signup & Auth**: Fluxo de cadastro integrado com Supabase Auth, suporte a **Google OAuth** e sincronização de perfis.
 - **Agile Taskboard**: Kanban dinâmico com prioridades, tags e rastreio de tempo integrado por tarefa.
-- **Hierarchical Access**: Gestão de acessos granular para projetos (Owner vs Supervisor).
+- **Internationalization (i18n)**: Suporte multi-idioma (Português/Inglês) com persistência de preferência e seletor de tema integrado.
+- **Premium UI/UX**: Interface modernizada com **Layout Padronizado**, Glassmorphism, e suporte total a temas Dark/Light.
 - **Proof of Work (PoW)**: Registro de atividades com evidências complexas (Arquivos + **Links Manuais**).
 - **IA Assisted Logging**: Use linguagem natural para registrar suas horas com extração automática de metadados.
 - **Account Management**: Área "My Profile" completa com gestão de senha e segurança.
@@ -18,10 +19,11 @@ Pejotinha é uma plataforma SaaS multiusuário voltada para freelancers que dese
 ---
 
 ## 🛠️ Tecnologias
-- **Frontend**: Next.js 16.2 (App Router & Turbopack), Tailwind CSS v4, Lucide React, Framer Motion.
+- **Framework**: Next.js 16.2 (App Router & Turbopack), **next-intl** (i18n), **next-themes**.
+- **Frontend**: Tailwind CSS v4, Lucide React, Framer Motion, Recharts.
 - **Backend / BaaS**: Supabase (Self-hosted ou Cloud) - Auth, Storage, DB, RLS.
 - **ORM**: Prisma 7 (PostgreSQL).
-- **IA**: Vercel AI SDK (Google Gemini 1.5 Flash / Pro).
+- **IA**: Vercel AI SDK (Google Gemini, Anthropic, OpenAI).
 - **Infra**: Docker Multi-stage (Coolify-ready).
 
 ---
@@ -118,10 +120,17 @@ Ideal para iterações rápidas e total independência de internet/custos de nuv
    ```bash
    npx prisma db push
    ```
-3. **Sincronizar Supabase**: Sempre que alterar tabelas, execute o helper para manter RLS e Triggers:
-   ```bash
-   npm run db:setup-supabase
-   ```
+3. **Se você estiver conectando ao **Supabase Cloud**, use o comando interativo:
+```bash
+npm run setup
+```
+Selecione a opção **2 (Cloud)**. O script configurará automaticamente os endereços otimizados da AWS (Pooler regional) para evitar erros de DNS no Windows.
+
+### 🛠️ Supabase Cloud Troubleshooting
+Se o `db:push` falhar com `P1001` (Can't reach database):
+1.  Verifique se o seu host é o `aws-0-REGION.pooler.supabase.com` no seu `.env.cloud`.
+2.  Garanta que o usuário no `.env.cloud` seja `postgres.[PROJECT_REF]`.
+3.  O `DATABASE_URL` deve usar a porta **6543** para melhor compatibilidade.
 4. **Ver no Studio Local**: [http://localhost:54323](http://localhost:54323)
 
 ---

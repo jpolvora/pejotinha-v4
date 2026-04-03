@@ -28,18 +28,18 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger 
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all duration-300 disabled:opacity-50"
+        className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/50 bg-muted/20 backdrop-blur-md hover:bg-accent transition-all duration-300 disabled:opacity-50"
         disabled={isPending}
       >
-        <Languages className={isPending ? "h-4 w-4 animate-spin text-white/70" : "h-4 w-4 text-white/70"} />
+        <Languages className={isPending ? "h-4 w-4 animate-spin text-foreground/70" : "h-4 w-4 text-foreground/70"} />
         <span className="sr-only">{t('language')}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40 rounded-xl border-white/10 bg-black/80 backdrop-blur-xl">
+      <DropdownMenuContent align="end" className="w-40 rounded-xl border-border bg-popover/95 backdrop-blur-xl shadow-2xl">
         {routing.locales.map((cur) => (
           <DropdownMenuItem
             key={cur}
             onClick={() => onLocaleChange(cur)}
-            className={`cursor-pointer transition-colors hover:bg-white/10 ${locale === cur ? "bg-white/10 text-primary font-medium" : "text-white/70"}`}
+            className={`cursor-pointer transition-colors hover:bg-accent ${locale === cur ? "bg-accent text-primary font-medium" : "text-foreground/70"}`}
           >
             <span className="mr-2 text-lg">
               {cur === 'pt-BR' && "🇧🇷"}

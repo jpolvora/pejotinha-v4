@@ -51,109 +51,107 @@ export function LoginForm({ isGoogleEnabled }: LoginFormProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4 relative overflow-hidden">
-      {/* Premium background decorations */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full" />
-
-      <div className="absolute top-8 left-8 flex items-center gap-2 text-primary font-bold uppercase tracking-wider">
-        <LayoutDashboard className="h-6 w-6" />
-        Pejotinha workspace
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f0f2f5] dark:bg-zinc-950 p-4 relative overflow-hidden font-sans">
+      {/* Riskified-style Particle Background */}
+      <div className="absolute inset-0 opacity-[0.3] dark:opacity-[0.1]" 
+        style={{ 
+          backgroundImage: `radial-gradient(circle, var(--color-primary) 1.5px, transparent 1.5px)`, 
+          backgroundSize: '40px 40px' 
+        }} 
+      />
+      
+      {/* Logo at Top Center (Manual offset to match reference) */}
+      <div className="mb-12 flex flex-col items-center gap-2 z-20">
+        <div className="flex items-center gap-3 text-zinc-900 dark:text-zinc-50 font-black uppercase tracking-[0.4em]">
+          <LayoutDashboard className="h-6 w-6 text-primary fill-primary/10" />
+          <span className="text-xl">{t('pejotinhaWorkspace') || 'Pejotinha'}</span>
+        </div>
       </div>
 
       <div className="absolute top-8 right-8">
         <LanguageSwitcher />
       </div>
       
-      <Card className="w-full max-w-md shadow-2xl border border-white/10 rounded-2xl bg-background/50 backdrop-blur-xl relative z-10 transition-all hover:shadow-primary/5">
-        <CardHeader className="space-y-3 pb-6 border-b border-white/5 mb-6">
-          <CardTitle className="text-3xl font-black tracking-tight bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">
+      <Card className="w-full max-w-[450px] shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] border-none ring-0 rounded-sm bg-white dark:bg-zinc-900 relative z-10 p-2 overflow-visible">
+        <CardHeader className="space-y-1 pb-10 pt-8 text-center border-none">
+          <CardTitle className="text-[26px] font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
             {mode === 'login' ? t('accessControl') : t('createAccount')}
           </CardTitle>
-          <CardDescription className="text-base text-muted-foreground font-medium">
-            {mode === 'login' 
-              ? t('signInToWorkspace') 
-              : t('joinPejotinha')}
+          <CardDescription className="hidden">
+            {mode === 'login' ? t('signInToWorkspace') : t('joinPejotinha')}
           </CardDescription>
         </CardHeader>
         
         <form action={formAction}>
           <CardContent className="space-y-6">
             {state?.message && (
-              <div className={`p-4 mb-4 rounded-xl border-l-4 flex gap-3 items-center animate-in zoom-in-95 duration-300 ${
+              <div className={`p-3 mb-6 rounded-md border text-center animate-in fade-in duration-300 ${
                 state?.success 
-                  ? 'border-primary bg-primary/10 text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]' 
-                  : 'border-destructive bg-destructive/10 text-destructive-foreground'
+                  ? 'bg-green-50 border-green-100 text-green-700 dark:bg-green-900/10 dark:border-green-900/20 dark:text-green-500' 
+                  : 'bg-red-50 border-red-100 text-red-700 dark:bg-red-900/10 dark:border-red-900/20 dark:text-red-500'
               }`}>
-                {state?.success ? <LayoutDashboard className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                <p className="text-sm font-semibold">{state?.message}</p>
+                <p className="text-xs font-medium">{state?.message}</p>
               </div>
             )}
             
             {mode === 'signup' && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-500">
-                <Label htmlFor="fullName" className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70 ml-1">{t('fullName')}</Label>
-                <div className="relative group">
-                  <Input 
-                    id="fullName" 
-                    name="fullName" 
-                    type="text" 
-                    placeholder="John Doe" 
-                    required 
-                    className="h-12 border-white/10 bg-white/5 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl pl-11 backdrop-blur-sm"
-                  />
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="fullName" className="text-[13px] font-bold text-zinc-700 dark:text-zinc-400">{t('fullName')}</Label>
+                <Input 
+                  id="fullName" 
+                  name="fullName" 
+                  type="text" 
+                  placeholder="John Doe" 
+                  required 
+                  className="h-11 border-zinc-200 dark:border-zinc-700/50 bg-transparent focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-all rounded-sm px-4 text-zinc-900 dark:text-zinc-50"
+                />
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70 ml-1">{t('userEmail')}</Label>
-              <div className="relative group">
-                <Input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  placeholder="name@company.com" 
-                  required 
-                  autoComplete="email"
-                  className="h-12 border-white/10 bg-white/5 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl pl-11 backdrop-blur-sm"
-                />
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors font-bold text-lg">@</span>
-              </div>
+              <Label htmlFor="email" className="text-[13px] font-bold text-zinc-700 dark:text-zinc-400">{t('userEmail')}</Label>
+              <Input 
+                id="email" 
+                name="email" 
+                type="email" 
+                placeholder="Email" 
+                required 
+                autoComplete="email"
+                className="h-11 border-zinc-200 dark:border-zinc-700/50 bg-transparent focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-all rounded-sm px-4 text-zinc-900 dark:text-zinc-50"
+              />
             </div>
             
             <div className="space-y-2">
-              <div className="flex items-center justify-between ml-1">
-                <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">{t('password')}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-[13px] font-bold text-zinc-700 dark:text-zinc-400">{t('password')}</Label>
                 {mode === 'login' && (
-                  <a href="#" className="text-xs font-bold text-primary/80 hover:text-primary transition-colors">{t('forgot')}</a>
+                  <a href="#" className="text-[11px] font-semibold text-primary/90 hover:text-primary transition-colors">{t('forgot')}</a>
                 )}
               </div>
               <Input 
                 id="password" 
                 name="password" 
                 type="password" 
+                placeholder="Password"
                 required 
                 autoComplete={mode === 'login' ? "current-password" : "new-password"}
-                className="h-12 border-white/10 bg-white/5 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl backdrop-blur-sm"
+                className="h-11 border-zinc-200 dark:border-zinc-700/50 bg-transparent focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-all rounded-sm px-4 text-zinc-900 dark:text-zinc-50"
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-5 pt-4 pb-8">
+          <CardFooter className="flex flex-col gap-4 pt-8 pb-4 border-none bg-transparent">
             <Button 
               type="submit" 
               disabled={isPending}
-              className="w-full h-12 text-base font-black shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-between px-6 rounded-xl group"
+              className="w-full h-11 text-sm font-bold bg-[#5856d6] hover:bg-[#4846c4] text-white shadow-none transition-all rounded-sm active:scale-[0.98]"
             >
-              <span className="tracking-tight">{isPending ? t('processing') : (mode === 'login' ? t('authorizeAccess') : t('createAccount'))}</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              {isPending ? t('processing') : (mode === 'login' ? t('authorizeAccess') : t('createAccount'))}
             </Button>
 
             <button 
               type="button"
               onClick={toggleMode}
-              className="text-sm text-muted-foreground hover:text-primary transition-all font-bold tracking-tight py-1"
+              className="text-[13px] text-primary/80 hover:text-primary transition-all font-medium py-1"
             >
               {mode === 'login' 
                 ? t('dontHaveAccountSignUp') 
@@ -166,8 +164,8 @@ export function LoginForm({ isGoogleEnabled }: LoginFormProps) {
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-white/5" />
                   </div>
-                  <div className="relative flex justify-center text-[10px] uppercase tracking-[0.2em]">
-                    <span className="bg-[#121212] px-3 text-muted-foreground/50 font-black">{t('orContinueWith')}</span>
+                  <div className="relative flex justify-center text-[10px] uppercase tracking-[0.1em]">
+                    <span className="bg-white dark:bg-zinc-900 px-3 text-zinc-400 font-medium">{t('orContinueWith')}</span>
                   </div>
                 </div>
 
@@ -176,25 +174,42 @@ export function LoginForm({ isGoogleEnabled }: LoginFormProps) {
                   variant="outline"
                   disabled={isGoogleLoading || isPending}
                   onClick={handleGoogleLogin}
-                  className="w-full h-12 text-sm font-black border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all rounded-xl flex items-center justify-center gap-3 relative overflow-hidden group backdrop-blur-sm"
+                  className="w-full h-11 text-[13px] font-bold border-zinc-200 dark:border-zinc-700/50 bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all rounded-sm flex items-center justify-center gap-3 text-zinc-900 dark:text-zinc-50"
                 >
                   {isGoogleLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                      <span className="tracking-widest">{t('connecting')}</span>
+                      <span>{t('connecting')}</span>
                     </div>
                   ) : (
                     <>
-                      <GoogleIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                      <span className="tracking-widest uppercase">{t('signInWithGoogle')}</span>
+                      <GoogleIcon className="h-5 w-5" />
+                      <span>{t('signInWithGoogle')}</span>
                     </>
                   )}
                 </Button>
               </>
             )}
+            
+            <div className="mt-16 text-[11px] text-zinc-400 flex gap-4 font-semibold uppercase tracking-wider">
+              <a href="#" className="hover:text-primary transition-colors">Documentation</a>
+              <a href="#" className="hover:text-primary transition-colors">Terms</a>
+              <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+              <span className="ml-auto opacity-50">© PEJOTINHA</span>
+            </div>
           </CardFooter>
         </form>
       </Card>
+      
+      {/* Sandbox Access (Matching Reference) */}
+      <div className="mt-8 text-center z-20">
+        <p className="text-[12px] text-zinc-500 font-medium">
+          Don't have an account yet? <a href="#" className="text-primary hover:underline font-bold">Contact us</a>
+        </p>
+        <p className="mt-2 text-[12px] text-zinc-500 font-medium">
+          Sign in to your <a href="#" className="text-primary hover:underline font-bold">Sandbox account</a>
+        </p>
+      </div>
     </div>
   )
 }

@@ -12,6 +12,7 @@ Você é um **Senior Full Stack Architect** focado em código limpo, performance
 
 ## 🏗️ Arquitetura e Padrões (Engineering Efficiency)
 - **Interface:** Next.js + Tailwind v4. Use `backdrop-blur-*`, gradients e micro-animações (Framer Motion ou CSS) por padrão.
+- **Standardized Layout:** Use o container `.screen-container` (padding de 2rem nas laterais) e o componente `<PageHeader />` para títulos de página, seguindo o padrão do Agile Taskboard.
 - **Server-First:** Server Components por padrão. Client Components (`'use client'`) apenas para interatividade necessária.
 - **Data Discovery:** SEMPRE use a ferramenta `context7` para documentações oficiais (Prisma 7, Supabase Auth, Next 16) ANTES de propor mudanças em APIs.
 - **Feature Flags:** Use a tabela `SystemSetting` para configurações globais e toggle de funcionalidades (ex: `google_auth_enabled`).
@@ -29,7 +30,7 @@ Você é um **Senior Full Stack Architect** focado em código limpo, performance
 
 ## 🧠 Sincronização de Contexto
 1. **Explore Primeiro:** Use `serena` para mapear o impacto de alterações em símbolos compartilhados.
-2. **Leia a Verdade:** Sempre consulte `SPECS.md` e o último walkthrough antes de iniciar.
+2. **Leia a Verdade:** Sempre consulte `SPECS.md`, `docs/UI_GUIDELINES.md` e o último walkthrough antes de iniciar.
 3. **Plano de Voo:** Crie o arquivo `/plans/YYYY-MM-DD_{task_name}_plan.md` seguindo a estrutura do `vibecoder-logger`.
 4. **Iteração Curta:** Prefira edits contíguos pequenos a substituições massivas de arquivos.
 

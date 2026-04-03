@@ -1,3 +1,4 @@
+import Script from 'next/script'
 import type { Metadata } from 'next'
 import { Inter, Geist } from 'next/font/google'
 import '../globals.css'
@@ -45,27 +46,10 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning className={cn("font-sans", geist.variable)}>
       <head>
-        <script
+        <Script
           id="theme-init"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('theme') || 'dark';
-                  var color = localStorage.getItem('themeColor') || 'theme-blue';
-                  var root = document.documentElement;
-                  root.classList.remove('light', 'dark', 'theme-blue', 'theme-orange', 'theme-purple', 'theme-green', 'theme-red', 'theme-zinc');
-                  
-                  if (theme === 'system') {
-                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                  }
-                  
-                  root.classList.add(theme);
-                  root.classList.add(color);
-                } catch (e) {}
-              })();
-            `,
-          }}
+          src="/theme-init.js"
+          strategy="beforeInteractive"
         />
       </head>
       <body className={`${inter.className} min-h-screen bg-background antialiased`} suppressHydrationWarning>

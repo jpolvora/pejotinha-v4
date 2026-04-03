@@ -58,7 +58,8 @@
     "dontHaveAccountSignUp": "¿No tiene una cuenta? Regístrese",
     "alreadyHaveAccountSignIn": "¿Ya tiene una cuenta? Inicie sesión",
     "orContinueWith": "o continúe con",
-    "connecting": "Conectando..."
+    "connecting": "Conectando...",
+    "pejotinhaWorkspace": "Espacio de Trabajo Pejotinha"
   },
   "Dashboard": {
     "title": "Tablero",
